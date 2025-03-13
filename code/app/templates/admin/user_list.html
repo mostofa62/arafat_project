@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{#
+<div class="container mx-auto mt-4 py-4">
+    <h1 class="text-xl font-bold text-center mb-4">{{ title }}</h1>
+
+    <table class="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+            <tr>
+                <th class="border border-gray-300 px-4 py-2">#</th>
+                <th class="border border-gray-300 px-4 py-2">Name</th>
+                <th class="border border-gray-300 px-4 py-2">Email</th>
+                <th class="border border-gray-300 px-4 py-2">Role</th>
+                <th class="border border-gray-300 px-4 py-2">Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users.items %}
+            <tr>
+                <td class="border border-gray-300 px-4 py-2">{{ loop.index + (users.page - 1) * users.per_page }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ user.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ user.email }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ user.role }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ user.created_at }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center py-4">No users found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="mt-4 flex justify-center">
+        {% if users.has_prev %}
+        <a href="{{ url_for(request.endpoint, page=users.prev_num) }}" class="px-4 py-2 bg-gray-200 rounded mx-1">Previous</a>
+        {% endif %}
+
+        {% for page_num in users.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+        <a href="{{ url_for(request.endpoint, page=page_num) }}" class="px-4 py-2 {{ 'bg-blue-500 text-white' if users.page == page_num else 'bg-gray-200' }} rounded mx-1">{{ page_num }}</a>
+        {% else %}
+        <span class="px-4 py-2">…</span>
+        {% endif %}
+        {% endfor %}
+
+        {% if users.has_next %}
+        <a href="{{ url_for(request.endpoint, page=users.next_num) }}" class="px-4 py-2 bg-gray-200 rounded mx-1">Next</a>
+        {% endif %}
+    </div>
+</div>
+#}
+
+
+<div class="container mx-auto mt-4 flex flex-col gap-4">
+    <h1 class="text-xl font-bold text-center mb-4">{{ title }}</h1>
+
+    
+    <div class="p-4">
+        <table id="user-table" class="display min-w-full table-auto border-collapse" style="width:100%">
+            <thead class="bg-gray-100">
+                <tr>
+                    {#<th>ID</th> #}
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+</div>
+
+<style>
+    /* Reset DataTables default styles */
+    .dataTables_wrapper {
+        padding: 0;
+    }
+
+    .dataTables_filter input {
+        @apply border rounded-lg p-2 text-sm;
+    }
+
+    .dataTables_length select {
+        @apply border rounded-lg p-2 text-sm;
+    }
+
+    .dataTables_paginate {
+        @apply mt-4;
+    }
+
+    .dataTables_paginate .paginate_button {
+        @apply border border-gray-300 px-3 py-1 rounded text-sm;
+    }
+
+    .dataTables_paginate .paginate_button:hover {
+        @apply bg-blue-500 text-white;
+    }
+
+    .dataTables_paginate .paginate_button.current {
+        @apply bg-blue-500 text-white;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('#user-table').DataTable({
+
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: {% if role %} "/admin/user-data/{{ role }}" {% else %} "/admin/user-data" {% endif %},
+                type: "GET"
+            },
+            columns: [
+                //{ data: "id" },
+                { data: "name" },
+                { data: "email" },
+                { data: "role" },
+                //{ data: "status" }
+            ]
+        });
+    });
+</script>
+
+
+{% endblock %}

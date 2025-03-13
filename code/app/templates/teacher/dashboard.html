@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <!-- Dashboard Layout -->
+    <div class="grid grid-cols-12 gap-6">
+        <!-- Left Sidebar -->
+        <div class="col-span-3 bg-gray-800 text-white p-6 rounded-lg">
+            <h1 class="text-2xl font-bold mb-6">Instructor Dashboard</h1>
+            <!-- Navigation Links (Optional) -->
+            <ul class="space-y-4">
+                
+                <li><a href="{{ url_for('teacher_courses.index') }}" class="text-white hover:text-gray-400">Courses</a></li>
+                
+            </ul>
+        </div>
+
+        <!-- Right Content Area -->
+        <div class="col-span-9">
+            <div class="flex justify-between mb-6">
+                <!-- Create Course Button -->
+                <a href="{{ url_for('teacher_courses.create') }}" class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600">
+                    Create Course
+                </a>
+            </div>
+
+            <!-- Information Blocks -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <!-- Total Revenue -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Total Revenue</h3>
+                    <p class="text-3xl font-bold text-green-500">${{ data.total_revenue | format_number }}</p>
+                </div>
+
+                <!-- Recent Student Ratings -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Recent Student Ratings</h3>
+                    <p class="text-lg">4.7 / 5</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Total Students -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Total Students</h3>
+                    <p class="text-3xl font-bold">{{ data.total_student | format_number }}</p>
+                </div>
+
+                <!-- Top Student Locations (Horizontal Bar Chart) -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Top Student Locations</h3>
+                    <div id="apexHorizontalBarChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+
+
+<script>
+
+	function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+    const options = {
+        series: [{
+            data: [45, 32, 23]
+        }],
+        chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: {
+                show: false // Hide the download button
+            }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                distributed: true
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            style: {
+                fontSize: '12px',
+                colors: ['#fff']
+            },
+            formatter: (val) => `${val}` // Just the value
+        },
+        xaxis: {
+            categories: ['Australia', 'India', 'Bangladesh'],
+            axisBorder: {
+                show: false // Hides the x-axis border
+            },
+            axisTicks: {
+                show: false // Hides the x-axis ticks
+            },
+            labels: {
+                show: false // Hides the x-axis interval labels
+            },
+            grid: {
+                show: false // Hides the x-axis grid lines
+            }
+        },
+        yaxis: {
+        	axisBorder: {
+                show: false // Hides the x-axis border
+            },
+
+        	grid: {
+                show: false // Hides the x-axis grid lines
+            }
+
+            //show: false // Hides the y-axis
+        },
+        colors: [getRandomColor(), getRandomColor(), getRandomColor()],
+        legend: {
+            show: false // Hides the legend
+        },
+        tooltip: {
+            shared: false, // Disable shared tooltips
+            custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                return `<div class="p-3">
+                            <span class="font-semibold">${w.globals.labels[dataPointIndex]}:</span> ${series[seriesIndex][dataPointIndex]} students
+                        </div>`;
+            }
+        }
+    };
+
+    const chart = new ApexCharts(document.querySelector("#apexHorizontalBarChart"), options);
+    chart.render();
+</script>
+
+
+
+
+
+{% endblock %}

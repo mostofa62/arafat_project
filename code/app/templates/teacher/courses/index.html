@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ title }}</h1>
+    {% if get_flashed_messages() %}
+    <div id="flash-messages" class="mb-4">
+        {% for message in get_flashed_messages(with_categories=true) %}
+        <div 
+            class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+            role="alert"
+        >
+            {{ message[1] }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <a href="{{ url_for('teacher_courses.create') }}" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 mb-6">
+        Create New Course
+    </a>
+    <div class="overflow-x-auto">
+        <table id="courseTable" class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2"></th> 
+                    <th class="px-4 py-2 text-left">#</th>
+                    <th class="px-4 py-2 text-left">Title</th>
+                    <th class="px-4 py-2 text-left">Category</th>
+                    <th class="px-4 py-2 text-left">Price</th>
+                    <th class="px-4 py-2 text-left">Created At</th>
+                    <th class="px-4 py-2 text-left">Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('#courseTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ url_for('teacher_courses.courses_data') }}",
+            columns: [
+                {
+                    data: 'thumbnail',
+                    className: 'px-4 py-2',
+                    orderable: false,
+                    searchable: false,
+                    render: function(data) {
+                        return`<img src="${data}" alt="No Image" class="w-20 object-cover rounded-md">`;
+                    }
+                },
+                { data: 'id', className: 'px-4 py-2 text-sm text-gray-700' },
+                { data: 'title', className: 'px-4 py-2 text-sm text-gray-700' },
+                { data: 'category', className: 'px-4 py-2 text-sm text-gray-700' },
+                { data: 'price', className: 'px-4 py-2 text-sm text-gray-700' },
+                { data: 'created_at', className: 'px-4 py-2 text-sm text-gray-700' },
+                {
+                    data: 'actions',
+                    orderable: false,
+                    searchable: false,
+                    className: 'px-4 py-2 text-sm text-gray-700',
+                    render: function(data, type, row) {
+                        return `
+                            <a href="/courses/${row.id}/lessons" 
+                               class="inline-block bg-blue-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
+                                Manage Lessons
+                            </a>
+                            <a href="/courses/edit/${row.id}" 
+                               class="inline-block bg-yellow-400 text-white px-3 py-1 rounded-md shadow-sm hover:bg-yellow-500">
+                                Edit
+                            </a>
+                            <button data-url="/courses/delete/${row.id}" 
+                                    class="delete-course bg-red-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-red-600">
+                                Delete
+                            </button>
+                        `;
+                    }
+                },
+            ],
+            responsive: true,
+            dom: '<"flex items-center justify-between mb-4"lf>rt<"flex items-center justify-between mt-4"ip>',
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search courses...",
+            },
+        });
+    });
+</script>
+
+
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
+
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+{% endblock %}

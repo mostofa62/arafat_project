@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Include Custom Styles -->
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>{{ title or default_title }}</title>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-500 p-4 text-white">
+        
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for(current_user.role + '.dashboard') }}">Dashboard</a>
+            {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin.user_list') }}">All Users</a>
+                <a href="{{ url_for('admin.teacher_list') }}">Teachers</a>
+                <a href="{{ url_for('admin.student_list') }}">Students</a>
+                <a href="{{ url_for('admin.admin_list') }}">Admins</a>
+                <a href="{{ url_for('admin_categories.index') }}">Categories</a>
+            {% endif %}
+            {% if current_user.role == 'teacher' %}
+                <a href="{{ url_for('teacher_courses.index') }}">My Courses</a>
+            {% endif %}
+            <a href="{{ url_for(current_user.role + '.update_profile') }}">Update Profile</a>
+            <a href="{{ url_for(current_user.role + '.logout') }}">Logout</a>
+        {% else %}
+            <a href="/">Home</a>
+            <a href="{{ url_for('student.login') }}">Student Login</a>
+            <a href="{{ url_for('teacher.login') }}">Teacher Login</a>
+            <a href="{{ url_for('admin.login') }}">Admin Login</a>
+        {% endif %}
+    </nav>
+    {% block content %}{% endblock %}
+</body>
+</html>

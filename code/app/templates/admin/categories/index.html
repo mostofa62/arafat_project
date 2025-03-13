@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Categories</h1>
+    {% if get_flashed_messages() %}
+    <div id="flash-messages" class="mb-4">
+        {% for message in get_flashed_messages(with_categories=true) %}
+        <div 
+            class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+            role="alert"
+        >
+            {{ message[1] }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <a href="{{ url_for('admin_categories.create') }}" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 mb-6">
+        Create New Category
+    </a>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b border-gray-200">#</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b border-gray-200">Name</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b border-gray-200">Created At</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b border-gray-200">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">{{ loop.index }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">{{ category.name }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
+                        {{ category.created_at.strftime('%b %d, %Y at %I:%M %p') }}
+                    </td>
+                    <td class="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
+                        <a href="{{ url_for('admin_categories.edit', id=category.id) }}" 
+                           class="inline-block bg-yellow-400 text-white px-3 py-1 rounded-md shadow-sm hover:bg-yellow-500 text-sm">
+                            Edit
+                        </a>
+                        <form action="{{ url_for('admin_categories.delete', id=category.id) }}" method="POST" class="inline-block">
+                            <button type="submit" 
+                                    class="inline-block bg-red-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-red-600 text-sm"
+                                    onclick="return confirm('Are you sure?')">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
+
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+{% endblock %}
