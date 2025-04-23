@@ -327,7 +327,7 @@ CREATE TABLE public.lessons (
     title character varying(255) NOT NULL,
     content_type character varying(50) NOT NULL,
     content_url text,
-    video_url text,
+    text_content text,
     duration interval,
     "order" integer NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,

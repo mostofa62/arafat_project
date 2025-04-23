@@ -35,15 +35,23 @@ def register():
 @redirect_if_logged_in
 def login():
     if request.method == 'POST':
+        next_page = request.form.get('next')
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email, role='student').first()
         if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('student.dashboard'))
-        flash('Invalid credentials', 'error')
-    return render_template('student/login.html', user_type='student', title='Student Login')
-
+            login_user(user)            
+            print('next_page',type(next_page))
+            if next_page!= "None":
+                return redirect(next_page)
+            else:
+               return redirect(url_for('student.dashboard'))
+        else:
+            flash('Invalid credentials', 'error')
+    
+    next_page = request.args.get('next')
+    return render_template('student/login.html', user_type='student', title='Student Login',next=next_page)
+@student_bp.route('/')
 @student_bp.route('/dashboard')
 @login_required
 def dashboard():

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+    <!-- Back to Lessons Link -->
+    <a href="{{ url_for('enrolled_lesson.list_lessons', course_id=lesson.course_id) }}"
+       class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 mb-6 transition duration-200">
+        ← Back to Lessons
+    </a>
+
+    <!-- Lesson Title -->
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">{{ lesson.title }}</h2>
+
+    {% if completed %}
+        <p class="text-md border p-1 font-bold text-green my-2">✅ You’ve completed this lesson.</p>
+    {% endif %}
+
+
+    <!-- Lesson Content -->
+    <div class="mb-8 rounded-xl overflow-hidden shadow-lg bg-white p-4">
+
+        {% if lesson.content_type == 'video' %}
+            <!-- Video with Plyr -->
+            <video id="player" playsinline controls class="w-full rounded-xl shadow">
+                <source src="{{ url_for('static', filename='uploads/coureselesson/' ~ lesson.course_id ~ '/' ~ lesson.content_url) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- Plyr CSS & JS -->
+            <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+            <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+            <script>
+                const player = new Plyr('#player');
+            </script>
+
+        {% elif lesson.content_type == 'pdf' %}
+        <div id="pdf-container" class="space-y-4 overflow-y-auto max-h-[80vh] border rounded-xl p-4 bg-gray-50">
+            <!-- PDF pages will be appended here -->
+        </div>
+        
+        <!-- PDF.js CDN -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+        <script>
+            const url = "{{ url_for('static', filename='uploads/coureselesson/' ~ lesson.course_id ~ '/' ~ lesson.content_url) }}";
+            const container = document.getElementById('pdf-container');
+        
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        
+            pdfjsLib.getDocument(url).promise.then(pdf => {
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    pdf.getPage(pageNum).then(page => {
+                        const canvas = document.createElement('canvas');
+                        canvas.className = "rounded border shadow";
+                        const context = canvas.getContext('2d');
+                        const viewport = page.getViewport({ scale: 1.25 });
+        
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+        
+                        page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
+                            container.appendChild(canvas);
+                        });
+                    });
+                }
+            });
+        </script>
+        
+
+        {% elif lesson.content_type == 'text' %}
+            <!-- Text Content -->
+            <div class="prose max-w-none prose-lg text-gray-700">
+                {{ lesson.text_content | safe }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Mark as Complete Button -->
+    <form method="POST" action="{{ url_for('enrolled_lesson.complete_lesson', course_id=lesson.course_id, lesson_id=lesson.id) }}">
+        <button type="submit"
+                class="px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow hover:bg-green-700 transition duration-200">
+            ✅ Mark as Complete
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, login_required, current_user, logout_user
-from app.models import User, db
+from sqlalchemy import func
+from app.models import Course, Enrollment, Order, User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.middleware import redirect_if_logged_in
 
@@ -47,12 +48,27 @@ def login():
         flash('Invalid credentials', 'error')
     return render_template('teacher/login.html', user_type='teacher', title='Teacher Login')
 
+@teacher_bp.route('/')
 @teacher_bp.route('/dashboard')
 @login_required
 def dashboard():
+
+    # Subquery to get all course IDs for the current teacher
+    teacher_courses = db.session.query(Course.id).filter(Course.teacher_id == current_user.id).subquery()
+
+    # Total number of enrollments for this teacher's courses
+    enrollment_count = db.session.query(func.count(Enrollment.id)).filter(
+        Enrollment.course_id.in_(teacher_courses)
+    ).scalar() or 0
+
+    # Total revenue from completed orders for this teacher's courses
+    total_revenue = db.session.query(func.coalesce(func.sum(Order.amount), 0)).filter(
+        Order.course_id.in_(teacher_courses),
+        Order.payment_status == 'completed'
+    ).scalar() or 0
     data = {
-        'total_student':1200,
-        'total_revenue':2340
+        'total_student':enrollment_count,
+        'total_revenue':total_revenue
     }
     return render_template('teacher/dashboard.html', title='My dashboard',data=data)
 

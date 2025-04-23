@@ -1,0 +1,32 @@
+{% extends "main_layout.html" %}
+
+{% block content %}
+<div class="flex flex-col gap-3 items-center border border-black shadow p-5">
+<img src="{{ url_for('static', filename='uploads/course_thumb/' +course.thumbnail ) }}" alt="{{ course.title }} thumbnail" class="w-24 h-24 object-cover rounded">    
+<h2>Checkout: {{ course.title }}</h2>
+<p>Price: ${{ course.price }}</p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="flash-messages" class="mb-4">
+      {% for category, message in messages %}
+        {% if category == 'success' %}
+          <div class="px-4 py-3 rounded text-white bg-green-500" role="alert">
+            {{ message }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{%  if not existing_order %}
+<form method="POST">
+    <input type="hidden" name="course_id" value="{{ course.id }}">
+    <input type="hidden" name="amount" value="{{ course.price }}">
+    <button type="submit" class="border rounded-md border-black py-2 px-4">Confirm Purchase</button>
+</form>
+{% endif %}
+</div>
+
+{% endblock %}

@@ -17,6 +17,7 @@
         </div>
         {% endif %}
         <form method="POST" action="{{ url_for(user_type + '.login') }}">
+            <input type="hidden" name="next" value="{{ next }}">
             <!-- Email -->
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700">Email</label>

@@ -22,6 +22,7 @@ def login():
         flash('Invalid credentials', 'error')
     return render_template('admin/login.html', user_type='admin',title='Admin Login')
 
+@admin_bp.route('/')
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():

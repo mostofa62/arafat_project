@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField,  TextAreaField, DecimalField, SelectField, FileField, IntegerField 
+from wtforms import HiddenField, StringField, SubmitField,  TextAreaField, DecimalField, SelectField, FileField, IntegerField, ValidationError 
 from wtforms.validators import DataRequired, Length, NumberRange, Optional, URL
 
 class CategoryForm(FlaskForm):
@@ -19,32 +19,28 @@ class CourseForm(FlaskForm):
 
 
 class LessonForm(FlaskForm):
-    title = StringField(
-        'Title', 
-        validators=[DataRequired(), Length(max=255)]
-    )
+    title = StringField('Title', validators=[DataRequired(), Length(max=255)])
     content_type = SelectField(
         'Content Type',
         choices=[('video', 'Video'), ('pdf', 'PDF'), ('text', 'Text')],
         validators=[DataRequired()]
     )
-    content_url = StringField(
-        'Content URL',
-        validators=[Optional(), URL(message="Invalid URL format")]
-    )
-    video_url = StringField(
-        'Video URL',
-        validators=[Optional(), URL(message="Invalid URL format")]
-    )
-    duration = StringField(
-        'Duration (e.g., HH:MM:SS)',
-        validators=[Optional()]
-    )
-    order = IntegerField(
-        'Order',
-        validators=[DataRequired(), NumberRange(min=1, message="Order must be at least 1")]
-    )
+    content_url = HiddenField('Content Url', validators=[Optional()])
+    text_content = TextAreaField('Text Content', validators=[Optional()])
+    duration = StringField('Duration (e.g., HH:MM:SS)', validators=[Optional()])
+    order = IntegerField('Order', validators=[DataRequired(), NumberRange(min=1)])
     submit = SubmitField('Save')
+
+    def validate(self, extra_validators=None):
+        rv = super().validate(extra_validators=extra_validators)
+        if not rv:
+            return False
+
+        if self.content_type.data == 'text' and not self.text_content.data:
+            self.text_content.errors.append('Text content is required.')
+            return False
+
+        return True
 
     def validate_duration(form, field):
         if field.data:

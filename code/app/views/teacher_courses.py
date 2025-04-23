@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import current_user, login_required
 from app import db
-from app.models import Course, Category
+from app.models import Course, Category, Enrollment
 from app.forms import CourseForm
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
@@ -13,9 +13,25 @@ teacher_courses = Blueprint('teacher_courses', __name__)
 @teacher_courses.route('/courses/data', methods=['GET'])
 @login_required
 def courses_data():
-    # Fetch courses for the current user
-    query = Course.query.filter_by(teacher_id=current_user.id)
-    
+
+    # Subquery to get enrollment counts
+    enrollment_counts_subq = (
+        db.session.query(
+            Enrollment.course_id,
+            func.count(Enrollment.id).label('enrollment_count')
+        )
+        .group_by(Enrollment.course_id)
+        .subquery()
+    )
+   # Join Course with the subquery for counts
+    query = (
+        db.session.query(
+            Course,
+            func.coalesce(enrollment_counts_subq.c.enrollment_count, 0).label('enrollment_count')
+        )
+        .outerjoin(enrollment_counts_subq, Course.id == enrollment_counts_subq.c.course_id)
+        .filter(Course.teacher_id == current_user.id)
+    )    
     # Handle search, ordering, and pagination (from DataTables parameters)
     search_value = request.args.get('search[value]')
     if search_value:
@@ -29,10 +45,14 @@ def courses_data():
         '2': func.coalesce(Course.category_id, 'Uncategorized'),
         '3': Course.price,
         '4': Course.created_at,
+        '5': 'enrollment_count'
     }
     if order_column and order_dir:
         order_by = column_map.get(order_column, Course.id)
-        query = query.order_by(order_by.desc() if order_dir == 'desc' else order_by)
+        if order_by == 'enrollment_count':
+            query = query.order_by(db.desc('enrollment_count') if order_dir == 'desc' else db.asc('enrollment_count'))
+        else:
+            query = query.order_by(order_by.desc() if order_dir == 'desc' else order_by)
 
     # Pagination
     start = int(request.args.get('start', 0))
@@ -42,7 +62,7 @@ def courses_data():
 
     # Prepare response
     data = []
-    for course in courses:
+    for course, enrollment_count  in courses:
         thumbnail_url = url_for('static', filename='images/default_thumb.png')
         if course.thumbnail:  # Check if the course has a thumbnail set
             thumbnail_path = os.path.join(current_app.static_folder, f'uploads/course_thumb/{course.thumbnail}')
@@ -57,6 +77,7 @@ def courses_data():
             "category": course.category.name if course.category else "Uncategorized",
             "price": f"${course.price:.2f}",
             "created_at": course.created_at.strftime('%b %d, %Y'),            
+            "enrollment_count": enrollment_count,
             "actions": f"""
                 <a href="{url_for('teacher_courses.edit', id=course.id)}" class="bg-yellow-500 text-white px-2 py-1 rounded-md">Edit</a>
                 <form action="{url_for('teacher_courses.delete', id=course.id)}" method="POST" style="display: inline;">

@@ -41,3 +41,7 @@ def create_admin_user():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg'}
+
+
+def allowed_file_lessson(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'mp4'}

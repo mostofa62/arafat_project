@@ -42,7 +42,7 @@ CREATE TABLE Lessons (
     title VARCHAR(255) NOT NULL,
     content_type VARCHAR(50) CHECK (content_type IN ('video', 'pdf', 'text')) NOT NULL,
     content_url TEXT,
-    video_url TEXT,
+    text_content TEXT,
     duration INTERVAL,
     "order" INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
