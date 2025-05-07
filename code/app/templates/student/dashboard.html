@@ -1,7 +1,93 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
-    <h1 class="text-2xl font-bold">Welcome, {{ current_user.username }}</h1>
+<div class="max-w-7xl mx-auto p-2">
+    <h1 class="text-2xl font-bold px-4">Welcome, {{ current_user.name }}</h1>
+
+    <div class="container mx-auto px-4 py-6">
+        <h3 class="font-bold text-gray-800 mb-6">{{ title_enrollment }}</h3>    
+       
+        <div class="overflow-x-auto">
+            <table id="courseTable" class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-2"></th> 
+                        <th class="px-4 py-2 text-left">#</th>
+                        <th class="px-4 py-2 text-left">Title</th>
+                        <th class="px-4 py-2 text-left">Category</th>                    
+                        <th class="px-4 py-2 text-left">Enrolled At </th>
+                        <th class="px-4 py-2 text-left">Progress</th>
+                        <th class="px-4 py-2 text-left">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#courseTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ url_for('student_courses.courses_data') }}",
+                columns: [
+                    {
+                        data: 'thumbnail',
+                        className: 'px-4 py-2',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            return`<img src="${data}" alt="No Image" class="w-20 object-cover rounded-md">`;
+                        }
+                    },
+                    { data: 'id', className: 'px-4 py-2 text-sm text-gray-700' },
+                    { data: 'title', className: 'px-4 py-2 text-sm text-gray-700' },
+                    { data: 'category', className: 'px-4 py-2 text-sm text-gray-700' },
+                    { data: 'enrolled_at', className: 'px-4 py-2 text-sm text-gray-700' },
+                    {
+                        data: 'progress',
+                        className: 'px-4 py-2 text-sm text-gray-700',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            const percent = parseInt(data.replace('%', ''));
+                            return `
+                                <div class="w-full">
+                                    <div class="flex justify-between text-xs font-medium mb-1 text-gray-700">
+                                        <span>${data}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-green-500 h-2.5 rounded-full" style="width: ${percent}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    },
+                   
+                    
+                    {
+                        data: 'actions',
+                        orderable: false,
+                        searchable: false,
+                        className: 'px-4 py-2 text-sm text-gray-700',
+                        render: function(data, type, row) {
+                            return `
+                                <a href="/enrollments/${row.id}/lessons" 
+                                   class="inline-block bg-blue-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
+                                    Manage Lessons
+                                </a>                           
+                            `;
+                        }
+                    },
+                ],
+                responsive: true,
+                dom: '<"flex items-center justify-between mb-4"lf>rt<"flex items-center justify-between mt-4"ip>',
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search courses...",
+                },
+            });
+        });
+    </script>
+    
 </div>
 {% endblock %}

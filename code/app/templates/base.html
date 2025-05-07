@@ -18,29 +18,68 @@
     <title>{{ title or default_title }}</title>
 </head>
 <body class="bg-gray-100">
-    <nav class="bg-blue-500 p-4 text-white">
-        <a href="/">Home</a>
+    <nav class="bg-blue-500 flex items-center gap-2 p-4 text-white">
+        <a href="/" class="{{ 'font-bold underline' if request.path == '/' else '' }}">Home</a>
+    
         {% if current_user.is_authenticated %}
-            <a href="{{ url_for(current_user.role + '.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for(current_user.role + '.dashboard') }}"
+               class="{{ 'font-bold underline' if request.path == url_for(current_user.role + '.dashboard') else '' }}">
+               Dashboard
+            </a>
+    
             {% if current_user.role == 'admin' %}
-                <a href="{{ url_for('admin.user_list') }}">All Users</a>
-                <a href="{{ url_for('admin.teacher_list') }}">Teachers</a>
-                <a href="{{ url_for('admin.student_list') }}">Students</a>
-                <a href="{{ url_for('admin.admin_list') }}">Admins</a>
-                <a href="{{ url_for('admin_categories.index') }}">Categories</a>
+                <a href="{{ url_for('admin.user_list') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('admin.user_list') else '' }}">
+                   All Users
+                </a>
+                <a href="{{ url_for('admin.teacher_list') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('admin.teacher_list') else '' }}">
+                   Teachers
+                </a>
+                <a href="{{ url_for('admin.student_list') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('admin.student_list') else '' }}">
+                   Students
+                </a>
+                <a href="{{ url_for('admin.admin_list') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('admin.admin_list') else '' }}">
+                   Admins
+                </a>
+                <a href="{{ url_for('admin_categories.index') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('admin_categories.index') else '' }}">
+                   Categories
+                </a>
             {% endif %}
+    
             {% if current_user.role == 'teacher' %}
-                <a href="{{ url_for('teacher_courses.index') }}">My Courses</a>
+                <a href="{{ url_for('teacher_courses.index') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('teacher_courses.index') else '' }}">
+                   My Courses
+                </a>
             {% endif %}
-
+    
             {% if current_user.role == 'student' %}
-                <a href="{{ url_for('student_courses.index') }}">My Enrollments</a>
+                
+                <a href="{{ url_for('student_courses.index') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('student_courses.index') else '' }}">
+                   My Enrollments
+                </a>
             {% endif %}
-            <a href="{{ url_for(current_user.role + '.update_profile') }}">Update Profile</a>
-            <a href="{{ url_for(current_user.role + '.logout') }}">Logout</a>
-        
+    
+            <a href="{{ url_for(current_user.role + '.update_profile') }}"
+               class="{{ 'font-bold underline' if request.path == url_for(current_user.role + '.update_profile') else '' }}">
+               Profile
+            </a>
+    
+            <!-- Right-aligned Logout -->
+            <div class="ml-auto">
+                <a href="{{ url_for(current_user.role + '.logout') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for(current_user.role + '.logout') else '' }}">
+                   Logout
+                </a>
+            </div>
         {% endif %}
     </nav>
+    
     {% block content %}{% endblock %}
 </body>
 </html>

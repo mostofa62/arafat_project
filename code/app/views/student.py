@@ -55,7 +55,7 @@ def login():
 @student_bp.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('student/dashboard.html')
+    return render_template('student/dashboard.html', title_enrollment = 'Your Enrollments')
 
 @student_bp.route('/logout')
 @login_required

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-extrabold text-indigo-700">{{ quiz.title }}</h1>
+    <a href="{{ url_for('enrolled_quiz.list_quizzes', course_id=quiz.course_id) }}"
+       class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition duration-200">
+      ← Back to Quiz List
+    </a>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <form method="POST" class="space-y-6">
+      {% for question in quiz.questions %}
+        <div class="border border-gray-200 rounded-md p-4">
+          <p class="font-semibold text-gray-800 mb-3">
+            {{ loop.index }}. {{ question.question_text }}
+          </p>
+
+          <div class="space-y-2">
+            {% if question.question_type == 'single_choice' %}
+              {% for answer in question.answers %}
+                <label class="flex items-center space-x-2 text-gray-700">
+                  <input type="radio" name="question-{{ question.id }}" value="{{ answer.id }}" class="text-blue-600">
+                  <span>{{ answer.answer_text }}</span>
+                </label>
+              {% endfor %}
+            {% elif question.question_type == 'multiple_choice' %}
+              {% for answer in question.answers %}
+                <label class="flex items-center space-x-2 text-gray-700">
+                  <input type="checkbox" name="question-{{ question.id }}" value="{{ answer.id }}" class="text-blue-600">
+                  <span>{{ answer.answer_text }}</span>
+                </label>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+
+      <div class="text-right">
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-md transition duration-200">
+          Submit Quiz
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

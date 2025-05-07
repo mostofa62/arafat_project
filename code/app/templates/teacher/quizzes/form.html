@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">
+        {{ 'Edit' if quiz else 'Create' }} Quiz
+    </h1>
+
+    {% if get_flashed_messages() %}
+    <div id="flash-messages" class="mb-4">
+        {% for message in get_flashed_messages(with_categories=true) %}
+        <div 
+            class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+            role="alert"
+        >
+            {{ message[1] }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" class="bg-white p-6 rounded-sm shadow-md border border-gray-200 space-y-6">
+        {{ form.hidden_tag() }}
+
+        <!-- Title -->
+        <div>
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ form.title.label.text }}
+            </label>
+            {{ form.title(class="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm") }}
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ form.description.label.text }}
+            </label>
+            {{ form.description(class="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm") }}
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center space-x-4">
+            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-sm shadow-md hover:bg-green-600">
+                {{ 'Update' if quiz else 'Create' }}
+            </button>
+            <a href="{{ url_for('course_quiz.list_quizzes', course_id=course.id) }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-sm shadow-md hover:bg-gray-400">
+                Back
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000);
+    });
+}, 2000);
+</script>
+
+<style>
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+{% endblock %}

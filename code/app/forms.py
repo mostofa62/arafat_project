@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import HiddenField, StringField, SubmitField,  TextAreaField, DecimalField, SelectField, FileField, IntegerField, ValidationError 
+from wtforms import BooleanField, FieldList, FormField, HiddenField, StringField, SubmitField,  TextAreaField, DecimalField, SelectField, FileField, IntegerField, ValidationError 
 from wtforms.validators import DataRequired, Length, NumberRange, Optional, URL
 
 class CategoryForm(FlaskForm):
@@ -48,3 +48,27 @@ class LessonForm(FlaskForm):
             pattern = r'^(\d{1,2}):([0-5]?\d):([0-5]?\d)$'
             if not re.match(pattern, field.data):
                 raise ValidationError("Invalid duration format. Use HH:MM:SS.")
+
+
+
+
+
+
+class QuizForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(max=255)])
+    description = TextAreaField('Description')
+    submit = SubmitField('Save')
+
+class AnswerForm(FlaskForm):
+    answer_text = StringField('Answer', validators=[DataRequired()])
+    is_correct = BooleanField('Correct')
+
+class QuestionForm(FlaskForm):
+    question_text = TextAreaField('Question', validators=[DataRequired()])
+    question_type = SelectField('Question Type', choices=[
+        ('single_choice', 'Single Choice'),
+        ('multiple_choice', 'Multiple Choice')
+    ], validators=[DataRequired()])
+
+    answer_texts = FieldList(FormField(AnswerForm), min_entries=2, max_entries=10)
+    submit = SubmitField('Save')

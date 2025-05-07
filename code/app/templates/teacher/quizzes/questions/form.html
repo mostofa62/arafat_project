@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6 bg-white rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">{{ title }}</h2>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-4">
+      {{ form.question_text.label(class="block font-medium mb-1") }}
+      {{ form.question_text(class="w-full p-2 border rounded") }}
+    </div>
+
+    <div class="mb-4">
+      {{ form.question_type.label(class="block font-medium mb-1") }}
+      {{ form.question_type(class="w-full p-2 border rounded", onchange="changeInputType()") }}
+    </div>
+
+    <div id="answers">
+      {% for subform in form.answer_texts %}
+      <div class="flex items-center mb-2 gap-2 answer-row">
+        <input type="{{ 'radio' if form.question_type.data == 'single_choice' else 'checkbox' }}"
+               name="dummy"
+               disabled
+               class="form-check-input mt-1"
+        />
+        {{ subform.answer_text(class="flex-1 p-2 border rounded", placeholder="Answer text") }}
+        {{ subform.is_correct.label }}
+        {{ subform.is_correct(class="correct-checkbox", onchange="handleCorrectChange(this)") }}
+        <button type="button" onclick="removeAnswer(this)" class="ml-2 text-red-500 hover:underline">Remove</button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="button" onclick="addAnswer()" class="bg-gray-200 text-sm px-3 py-1 rounded mt-2">Add Answer</button>
+
+    <div class="mt-4">
+      {{ form.submit(class="bg-blue-600 cursor-pointer text-white px-4 py-2 rounded") }}
+    </div>
+  </form>
+</div>
+
+<script>
+let answerIndex = {{ form.answer_texts|length }};
+
+function getInputType() {
+  const select = document.querySelector('select[name="question_type"]');
+  return select.value === 'single_choice' ? 'radio' : 'checkbox';
+}
+
+function changeInputType() {
+  const type = getInputType();
+
+  // Update display radio/checkbox type
+  document.querySelectorAll('#answers input.form-check-input').forEach(input => {
+    input.type = type;
+  });
+
+  // Reset correct checkboxes if single_choice
+  if (type === 'radio') {
+    let foundChecked = false;
+    document.querySelectorAll('#answers input.correct-checkbox').forEach(cb => {
+      if (cb.checked) {
+        if (!foundChecked) {
+          foundChecked = true;
+        } else {
+          cb.checked = false;
+        }
+      }
+    });
+  }
+}
+
+function handleCorrectChange(checkbox) {
+  const type = getInputType();
+  if (type === 'radio') {
+    document.querySelectorAll('#answers input.correct-checkbox').forEach(cb => {
+      if (cb !== checkbox) cb.checked = false;
+    });
+  }
+}
+
+function addAnswer() {
+  if (answerIndex >= 10) return;
+
+  const type = getInputType();
+  const container = document.createElement('div');
+  container.className = 'flex items-center mb-2 gap-2 answer-row';
+
+  container.innerHTML = `
+    <input type="${type}" disabled class="form-check-input mt-1" />
+    <input type="text" name="answer_texts-${answerIndex}-answer_text" placeholder="Answer text"
+           class="flex-1 p-2 border rounded" required />
+    <label>Correct?</label>
+    <input type="checkbox" name="answer_texts-${answerIndex}-is_correct" class="correct-checkbox"
+           onchange="handleCorrectChange(this)" />
+    <button type="button" onclick="removeAnswer(this)" class="ml-2 text-red-500 hover:underline">Remove</button>
+  `;
+  document.getElementById('answers').appendChild(container);
+  answerIndex++;
+  changeInputType();
+}
+
+function removeAnswer(button) {
+  const row = button.closest('.answer-row');
+  row.remove();
+}
+
+// Set correct input types on initial load
+document.addEventListener('DOMContentLoaded', changeInputType);
+</script>
+{% endblock %}

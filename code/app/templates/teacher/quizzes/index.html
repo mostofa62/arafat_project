@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Quizzes for {{ course.title }}</h1>
+    {% if get_flashed_messages() %}
+    <div id="flash-messages" class="mb-4">
+        {% for message in get_flashed_messages(with_categories=true) %}
+        <div 
+            class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+            role="alert"
+        >
+            {{ message[1] }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <a href="{{ url_for('course_quiz.create_quiz', course_id=course.id) }}" 
+       class="inline-block bg-blue-500 text-white px-4 py-2 rounded-sm shadow-sm hover:bg-blue-600 mb-6">
+        Create New Quiz
+    </a>
+
+    <div class="overflow-x-auto">
+        <table id="lessons-table" class="min-w-full bg-white border border-gray-200 rounded-sm shadow-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Description</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#lessons-table').DataTable({
+            ajax: "{{ url_for('course_quiz.quizzes_data', course_id=course.id) }}",
+            columns: [
+                { data: 'title' },
+                { data: 'description' },
+                { data: 'created_at' },
+                { data: 'actions', orderable: false, searchable: false }
+            ]
+        });
+
+        $(document).on('click', '.delete-lesson', function() {
+            const url = $(this).data('url');
+            if (confirm('Are you sure you want to delete this lesson?')) {
+                $.post(url, function(response) {
+                    if (response.success) {
+                        $('#lessons-table').DataTable().ajax.reload();
+                    } else {
+                        alert('Failed to delete lesson.');
+                    }
+                });
+            }
+        });
+    });
+</script>
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
+    
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+
+{% endblock %}

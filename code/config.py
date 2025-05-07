@@ -9,6 +9,7 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'postgresql://user:password@localhost/db_name')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    WTF_CSRF_ENABLED = False
 
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'app/static/uploads')    
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
