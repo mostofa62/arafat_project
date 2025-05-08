@@ -39,6 +39,11 @@ def quizzes_data(course_id):
                                class="inline-block bg-green-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
                                 Manage Questions
                             </a>
+
+                            <a href="/quiz/{quiz.id}/attempts" 
+                               class="inline-block bg-blue-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
+                                Manage Submission
+                            </a>
                 <a href="{url_for('course_quiz.edit_quiz', course_id=course_id, quiz_id=quiz.id)}" 
                    class="bg-yellow-400 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-yellow-500 text-sm">
                     Edit

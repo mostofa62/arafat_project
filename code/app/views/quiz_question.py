@@ -244,3 +244,85 @@ def quiz_result(quiz_id):
         })
 
     return render_template('student/quizzes/result.html', quiz=quiz, result_data=result_data, score=attempt.score)
+
+
+
+
+
+
+@quiz_question.route('/quiz/<int:quiz_id>/attempts', methods=['GET'])
+@login_required
+def quiz_attempts(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+
+    # Optional permission check (adjust as needed)
+    if current_user.role != 'teacher':
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('course_quiz.list_quizzes', course_id=quiz.course_id))
+
+    return render_template('teacher/quizzes/attempts.html', quiz=quiz, title=f'Attempts for {quiz.title}')
+
+
+
+@quiz_question.route('/quiz/<int:quiz_id>/attempts/data', methods=['GET'])
+@login_required
+def quiz_attempts_data(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+
+    if current_user.role != 'teacher':
+        return jsonify({"error": "Unauthorized access"}), 403
+
+    attempts = QuizAttempt.query.filter_by(quiz_id=quiz_id).order_by(QuizAttempt.attempted_at.desc()).all()
+    data = [
+        {
+            #"id": attempt.id,
+            "student_name": attempt.student.name,
+            "score": attempt.score if attempt.score is not None else "Not graded",
+            "attempted_at": attempt.attempted_at.strftime('%d %b, %Y %H:%M'),
+            "student_id": attempt.student_id,
+            "quiz_id":attempt.quiz_id
+        }
+        for attempt in attempts
+    ]
+    return jsonify({"data": data})
+
+
+
+@quiz_question.route('/quiz/<int:quiz_id>/<int:student_id>/result', methods=['GET'])
+@login_required
+def student_quiz_result_(quiz_id, student_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+
+    attempt = QuizAttempt.query.filter_by(quiz_id=quiz_id, student_id=student_id).first()
+    if not attempt:
+        flash("This student hasn't attempted the quiz yet.", "warning")
+        return redirect(url_for('course_quiz.list_quizzes', course_id=quiz.course_id))
+
+    result_data = []
+
+    for question in quiz.questions:
+        selected_answers = AttemptAnswer.query.filter_by(attempt_id=attempt.id, question_id=question.id).all()
+        selected_ids = {sa.selected_answer_id for sa in selected_answers}
+
+        all_answers = Answer.query.filter_by(question_id=question.id).all()
+        correct_ids = {a.id for a in all_answers if a.is_correct}
+
+        result_data.append({
+            'question_text': question.question_text,
+            'answers': [
+                {
+                    'text': a.answer_text,
+                    'is_correct': a.id in correct_ids,
+                    'is_selected': a.id in selected_ids
+                } for a in all_answers
+            ]
+        })
+
+    return render_template(
+        'student/quizzes/result.html',
+        quiz=quiz,
+        result_data=result_data,
+        score=attempt.score,
+        student_id=student_id
+    )
+

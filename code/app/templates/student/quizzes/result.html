@@ -26,10 +26,11 @@
         </div>
     
         <!-- Improved Back to Quiz List link -->
-        <a href="{{ url_for('enrolled_quiz.list_quizzes', course_id=quiz.course_id) }}"
-           class="inline-flex items-center justify-center mt-6 bg-blue-500 text-white font-medium text-lg py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-all duration-300">
-            ← Back to Quiz List
-        </a>
+        <a href="{{ url_for('course_quiz.list_quizzes', course_id=quiz.course_id) if current_user.role == 'teacher' else url_for('enrolled_quiz.list_quizzes', course_id=quiz.course_id) }}"
+   class="inline-flex items-center justify-center mt-6 bg-blue-500 text-white font-medium text-lg py-2 px-4 rounded-full shadow-md hover:bg-blue-600 transition-all duration-300">
+    ← Back to Quiz List
+</a>
+
     </div>
     
       

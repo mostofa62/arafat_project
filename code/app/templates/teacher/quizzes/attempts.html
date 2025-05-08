@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-6 border-b pb-3">
+            Submission for <span class="text-blue-600">{{ quiz.title }}</span>
+        </h1>
+
+        {% if get_flashed_messages() %}
+        <div id="flash-messages" class="mb-6">
+            {% for message in get_flashed_messages(with_categories=true) %}
+            <div 
+                class="flash-message flex items-center gap-3 px-4 py-3 rounded-md text-white shadow-md 
+                {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+                role="alert"
+            >
+                {% if message[0] == 'error' %}
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636L5.636 18.364M5.636 5.636l12.728 12.728"/>
+                    </svg>
+                {% else %}
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                {% endif %}
+                <span>{{ message[1] }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="flex justify-between items-center mb-6">
+            <a href="{{ url_for('course_quiz.list_quizzes', course_id=quiz.course_id) }}" 
+                class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow">
+                ← Back To Quiz List
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table id="lessons-table" class="min-w-full bg-white border border-gray-200 rounded-md">
+                <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-sm font-medium">Student</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium">Score</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium">Submission Time</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium">Action</th>
+
+                    </tr>
+                </thead>
+                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                    <!-- DataTables will populate this -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#lessons-table').DataTable({
+    ajax: "{{ url_for('quiz_question.quiz_attempts_data', quiz_id=quiz.id) }}",
+    columns: [
+        { data: 'student_name' },
+        {
+            data: 'score',
+            render: function(data, type, row) {
+                // If score is a string (e.g. "Not graded")
+                if (isNaN(data)) {
+                    return `<span class="inline-block bg-gray-400 text-white text-xs font-medium px-2 py-1 rounded">
+                                ${data}
+                            </span>`;
+                }
+
+                // Determine color
+                let color = 'bg-red-500';
+                if (data >= 80) color = 'bg-green-500';
+                else if (data >= 50) color = 'bg-yellow-500';
+
+                return `
+                    <div class="flex items-center gap-2 w-full">
+                        <div class="w-full bg-gray-200 rounded h-4">
+                            <div class="${color} h-4 rounded" style="width: ${data}%"></div>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-700">${data}%</span>
+                    </div>
+                `;
+            }
+        },
+        { data: 'attempted_at' },
+        {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: function(data, type, row) {
+                // Build the URL dynamically using quizId and row.student_id
+                const resultUrl = `/quiz/${row.quiz_id}/${row.student_id}/result`;
+                return `
+                    <a  href="${resultUrl}"
+                       class="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-1 px-3 rounded">
+                        View Result
+                    </a>
+                `;
+            }
+        }
+    ]
+});
+
+
+    // Auto-fade flash messages
+    setTimeout(() => {
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(message => {
+            message.style.transition = 'opacity 2s';
+            message.style.opacity = '0';
+            setTimeout(() => message.remove(), 2000);
+        });
+    }, 2000);
+</script>
+
+<style>
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+{% endblock %}
