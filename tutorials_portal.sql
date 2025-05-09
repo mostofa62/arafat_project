@@ -64,7 +64,7 @@ CREATE TABLE Questions (
     id SERIAL PRIMARY KEY,
     quiz_id INT NOT NULL REFERENCES Quizzes(id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
-    question_type VARCHAR(50) CHECK (question_type IN ('multiple_choice', 'true_false')) NOT NULL,
+    question_type VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
