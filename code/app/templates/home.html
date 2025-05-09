@@ -5,16 +5,22 @@
     {% if categories %}
     <div class="mt-8">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Categories</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {% for category in categories %}
                 <a href="{{ url_for('home_bp.category_course', category_id=category.id) }}"
-                   class="block bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded shadow-sm text-gray-800 font-medium">
-                    {{ category.name }}
+                   class="flex items-center gap-4 bg-gray-100 hover:bg-gray-200 px-4 py-3 rounded shadow-sm text-gray-800 font-medium">
+                   
+                   {% if category.thumbnail %}
+                       <img src="{{ url_for('static', filename='uploads/cat_thumb/' ~ category.thumbnail) }}" alt="{{ category.name }} Thumbnail"
+                            class="w-12 h-12 object-cover rounded-md">
+                   {% endif %}
+
+                   <span>{{ category.name }}</span>
                 </a>
             {% endfor %}
         </div>
     </div>
-    {% endif %}
+{% endif %}
 
 
 

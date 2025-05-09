@@ -24,6 +24,7 @@ class Category(db.Model):
     name = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    thumbnail = db.Column(db.Text)
 
      # Relationship with Course
     courses = db.relationship('Course', back_populates='category', lazy='dynamic')

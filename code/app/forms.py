@@ -5,6 +5,7 @@ from wtforms.validators import DataRequired, Length, NumberRange, Optional, URL
 class CategoryForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(max=255)])
     submit = SubmitField('Save')
+    thumbnail = FileField('Thumbnail')
 
 
 class CourseForm(FlaskForm):
