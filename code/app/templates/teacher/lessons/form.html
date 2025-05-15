@@ -139,6 +139,7 @@
     // Validate file extension based on content_type
     // Add custom file type validator
     $.validator.addMethod("validFileType", function (value, element) {
+        if (!value) return true;
         const contentType = $('[name="content_type"]').val();
         const ext = getFileExtension(value);
         if (contentType === 'video') {
@@ -173,7 +174,13 @@
                 number: true
             },
             lesson_file: {
-                validFileType: true
+                validFileType: true,
+                required: function () {
+                    const contentType = $('[name="content_type"]').val();
+                    const fileLinkVisible = $('#current-lesson-url').css('display') !== 'none';
+                    //alert(contentType)
+                    return (contentType === 'video' || contentType === 'pdf') && !fileLinkVisible;
+                }
             },
             text_content: {
                 requiredIfText: true

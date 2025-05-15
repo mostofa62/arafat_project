@@ -4,6 +4,7 @@ from app.models import User
 from werkzeug.security import generate_password_hash
 from app.utils import create_admin_user
 from babel.numbers import format_currency
+from datetime import datetime
 app = create_app()
 
 @app.template_filter('format_currency')
@@ -12,7 +13,10 @@ def format_currency_filter(value, currency='USD', locale='en_US'):
 # Context processor to inject the default title
 @app.context_processor
 def inject_title():
-    return {'default_title': os.getenv('app_name', 'Default App Name')}
+    return {
+        'default_title': os.getenv('app_name', 'Default App Name'),
+        'current_year':datetime.now().year
+    }
 
 # Check and create admin user if not already present
 with app.app_context():

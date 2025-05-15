@@ -3,16 +3,32 @@ from flask_login import login_user, login_required, current_user, logout_user
 from app.models import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.middleware import redirect_if_logged_in
-
+import os
+import json
 student_bp = Blueprint('student', __name__)
 
 @student_bp.route('/register', methods=['GET', 'POST'])
 @redirect_if_logged_in
 def register():
+    file_path = os.path.join(os.path.dirname(__file__), 'countries.json')
+    with open(file_path) as f:
+        countries_data = json.load(f)
+        countries = countries_data["countries"]["country"]
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
+        country = request.form.get('country', '').strip().upper()
+
+        # Basic validation
+        if not name or not email or not password or not country:
+            flash('All fields are required (Name, Email, Password, Country).', 'error')
+            return render_template(
+                'student/register.html', 
+                user_type='student', 
+                title='Student Registration',
+                countries=countries
+            )
         
         # Check if email is already registered
         existing_user = User.query.filter_by(email=email).first()
@@ -22,14 +38,14 @@ def register():
         
         # Create new student user
         hashed_password = generate_password_hash(password)
-        new_user = User(name=name, email=email, password=hashed_password, role='student')
+        new_user = User(name=name, email=email, password=hashed_password, role='student',country=country)
         db.session.add(new_user)
         db.session.commit()
         
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('student.login'))
     
-    return render_template('student/register.html', user_type='student', title='Student Registration')
+    return render_template('student/register.html', user_type='student', title='Student Registration',countries=countries)
 
 @student_bp.route('/login', methods=['GET', 'POST'])
 @redirect_if_logged_in

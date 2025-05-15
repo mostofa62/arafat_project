@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from app import db
 from datetime import datetime
+from sqlalchemy import Column, CHAR
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -12,6 +13,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(50), nullable=False)  # 'admin', 'teacher', 'student'
     bio = db.Column(db.Text, nullable=True)
     profile_picture = db.Column(db.Text, nullable=True)
+    country = Column(CHAR(10))
 
     def __repr__(self):
         return f"<User {self.name}>"

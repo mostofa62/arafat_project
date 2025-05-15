@@ -1,10 +1,93 @@
 {% extends "main_layout.html" %}
 
 {% block content %}
+<style>
+.swiper {
+  width: 100%;
+  height: auto;
+}
+.swiper-slide {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>
+
+
+    <div class="swiper mySwiper mb-8">
+  <div class="swiper-wrapper">
+    <!-- Slide 1 -->
+    <div class="swiper-slide">
+      <img src="{{ url_for('static', filename='images/education1.jpg') }}" alt="Learning together" class="w-full h-64 object-cover rounded-lg shadow" />
+      <a href="{{ url_for('student.register') }}"
+        class="absolute top-8 left-20 transform -translate-x-1/2 bg-blue-600 text-white bg-opacity-80 px-4 py-2 rounded-full text-sm font-semibold text-gray-900 shadow hover:bg-opacity-100 transition">
+        Start as Student
+      </a>
+    </div>
+    <!-- Slide 2 -->
+    <div class="swiper-slide">
+      <img src="{{ url_for('static', filename='images/education2.jpg') }}" alt="Online study" class="w-full h-64 object-cover rounded-lg shadow" />
+      <a href="{{ url_for('teacher.register') }}"
+        class="absolute top-32 right-8 transform -translate-x-1/2 bg-green-600 text-white bg-opacity-80 px-4 py-2 rounded-full text-sm font-semibold text-gray-900 shadow hover:bg-opacity-100 transition">
+        Start as Teacher
+      </a>
+    
+    </div>
+    <!-- Slide 3 -->
+    <div class="swiper-slide">
+      <img src="{{ url_for('static', filename='images/education3.jpg') }}" alt="Classroom session" class="w-full h-64 object-cover rounded-lg shadow" />
+      <a href="{{ url_for('home_bp.contact') }}"
+        class="absolute top-36 left-25 transform -translate-x-1/2 bg-yellow-600 text-white bg-opacity-80 px-4 py-2 rounded-full text-sm font-semibold text-gray-900 shadow hover:bg-opacity-100 transition">
+        Communicate with us
+      </a>
+    </div>
+
+
+    <!-- Slide 3 -->
+    <div class="swiper-slide">
+      <img src="{{ url_for('static', filename='images/education4.jpg') }}" alt="Classroom session" class="w-full h-64 object-cover rounded-lg shadow" />
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="swiper-pagination"></div>
+</div>
+
+<script>
+  const swiper = new Swiper(".mySwiper", {
+  autoplay: {
+    delay: 3000,
+    disableOnInteraction: false,
+  },
+  pagination: {
+    el: ".swiper-pagination",
+    clickable: true,
+  },
+  loop: false,
+  slidesPerView: 1,
+  spaceBetween: 16, // <-- Add this line (16px gap between slides)
+  breakpoints: {
+    640: {
+      slidesPerView: 2,
+      spaceBetween: 20,
+    },
+    1024: {
+      slidesPerView: 3,
+      spaceBetween: 24,
+    },
+  },
+});
+
+
+</script>
+
    
     {% if categories %}
-    <div class="mt-8">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Categories</h2>
+    <div class="mt-8 px-10">
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">Find the Perfect Course</h2>
+        <p class="text-gray-600 mb-4">Choose a category below to start your learning journey</p>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {% for category in categories %}
                 <a href="{{ url_for('home_bp.category_course', category_id=category.id) }}"

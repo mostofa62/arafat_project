@@ -15,9 +15,10 @@
     <!-- Include Custom Styles -->
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <title>{{ title or default_title }}</title>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-blue-500 flex items-center gap-2 p-4 text-white">
         <a href="/" class="{{ 'font-bold underline' if request.path == '/' else '' }}">Home</a>
     
@@ -55,6 +56,10 @@
                    class="{{ 'font-bold underline' if request.path == url_for('teacher_courses.index') else '' }}">
                    My Courses
                 </a>
+                <a href="{{ url_for('course_students.index') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('course_students.index') else '' }}">
+                   Course Enrollments
+                </a>
             {% endif %}
     
             {% if current_user.role == 'student' %}
@@ -81,5 +86,13 @@
     </nav>
     
     {% block content %}{% endblock %}
+
+    
+
+    <footer class="bg-white text-gray-700 mt-auto shadow-inner py-4">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+         <p>&copy; {{ current_year }} {{ default_title }}. All rights reserved.</p>
+      </div>
+   </footer>
 </body>
 </html>

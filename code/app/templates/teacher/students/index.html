@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ title }}</h1>
+    {% if get_flashed_messages() %}
+    <div id="flash-messages" class="mb-4">
+        {% for message in get_flashed_messages(with_categories=true) %}
+        <div 
+            class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+            role="alert"
+        >
+            {{ message[1] }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="overflow-x-auto">
+
+
+        <table id="studentsTable" class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+        <thead class="bg-gray-100">
+            <tr>
+            <th class="px-4 py-2 text-left">Student</th>
+            <th class="px-4 py-2 text-left">Course</th>
+            <th class="px-4 py-2 text-left">Completed Lessons</th>
+            <th class="px-4 py-2 text-left">Total Lessons</th>
+            <th class="px-4 py-2 text-left">Progress</th>
+            </tr>
+        </thead>
+        </table>
+
+
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+
+        $('#studentsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url :"{{ url_for('course_students.course_students_data') }}",
+            type: 'GET'
+        },
+        columns: [
+            { data: 'student_name' },
+            { data: 'course_title' },
+            { data: 'completed_lessons' },
+            { data: 'total_lessons' },
+            {
+            data: 'progress_percent',
+            render: function(data) {
+                return `
+                <div style="background:#ddd; height:10px; border-radius:5px;">
+                    <div style="background:#4caf50; height:10px; width:${parseFloat(data)}%; border-radius:5px;"></div>
+                </div>
+                <small>${data}</small>
+                `;
+            }
+            }
+        ]
+        });        
+
+
+    });
+</script>
+
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
+
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+{% endblock %}

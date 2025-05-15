@@ -46,6 +46,7 @@ def create_app():
     from app.views.quiz_question import quiz_question
 
     from app.views.enrolled_quiz import enrolled_quiz
+    from app.views.course_student import course_students
 
     from app.views.checkout import checkout_bp
 
@@ -61,6 +62,7 @@ def create_app():
     app.register_blueprint(course_quiz)
     app.register_blueprint(quiz_question)
     app.register_blueprint(enrolled_quiz)
+    app.register_blueprint(course_students)
 
     app.register_blueprint(checkout_bp, url_prefix='/checkout')
     

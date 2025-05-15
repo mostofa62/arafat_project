@@ -1,11 +1,22 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_user, login_required, current_user, logout_user
-from app.models import User, db
+from app.models import User, db, Order, Category, Course
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.middleware import redirect_if_logged_in
 import os
 import uuid
 from werkzeug.utils import secure_filename
+import json
+from sqlalchemy import func
+
+file_path = os.path.join(os.path.dirname(__file__), 'countries.json')
+countries = []
+with open(file_path) as f:
+    countries_data = json.load(f)
+    countries = countries_data["countries"]["country"]
+
+country_lookup = {c["countryCode"]: c["countryName"] for c in countries}
+#print(country_lookup)
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -26,8 +37,26 @@ def login():
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
-    users = User.query.all()  # Example: Admin can view all users
-    return render_template('admin/dashboard.html', users=users, title='My Dashboard')
+    total_sales = db.session.query(func.count(Order.id)).scalar()
+    # Aggregated sales by category
+    category_sales = (
+        db.session.query(
+            Category.name.label("category_name"),
+            func.count(Order.id).label("sales_count"),
+            (func.count(Order.id) * 100.0 / total_sales).label("percentage")
+        )
+        .join(Course, Course.category_id == Category.id)
+        .join(Order, Order.course_id == Course.id)
+        .group_by(Category.id)
+        .all()
+    )
+    user_role_counts = (
+        db.session.query(User.role, func.count(User.id).label("count"))
+        .filter(User.role != 'admin')  # Exclude 'admin' role
+        .group_by(User.role)
+        .all()
+    )  # Example: Admin can view all users
+    return render_template('admin/dashboard.html', category_sales=category_sales,user_role_counts=user_role_counts, title='My Dashboard')
 
 @admin_bp.route('/logout')
 @login_required
@@ -97,17 +126,20 @@ def user_data(role=None):
     total_records = query.count()
     users = query.offset(start).limit(length).all()
 
+    print(country_lookup['CA'])
+
     # Serialize data for DataTables
     data = [
-        {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "role": user.role,
-            #"status": user.status
-        }
-        for user in users
+    {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "country": country_lookup.get(user.country.strip().upper(), user.country) if user.country else ""
+    }
+    for user in users
     ]
+
 
     return jsonify({
         "draw": draw,
@@ -224,12 +256,14 @@ def update_profile():
 
         # Get the new email and check if it is unique
         new_email = request.form['email']
+        name = request.form['name']
         if User.query.filter_by(email=new_email).first() and new_email != user.email:
             flash('Email is already in use!', 'error')
             return redirect(url_for('admin.update_profile'))
 
         # Update the user data
         user.email = new_email
+        user.name = name
         user.bio = request.form.get('bio', '')  # Optional bio for teacher/student
 
         # Only update the profile picture if a new one is provided

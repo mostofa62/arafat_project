@@ -13,6 +13,7 @@
                 <th class="border border-gray-300 px-4 py-2">Name</th>
                 <th class="border border-gray-300 px-4 py-2">Email</th>
                 <th class="border border-gray-300 px-4 py-2">Role</th>
+                <th class="border border-gray-300 px-4 py-2">Country</th>
                 <th class="border border-gray-300 px-4 py-2">Created At</th>
             </tr>
         </thead>
@@ -23,6 +24,7 @@
                 <td class="border border-gray-300 px-4 py-2">{{ user.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ user.email }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ user.role }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ user.country }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ user.created_at }}</td>
             </tr>
             {% else %}
@@ -67,6 +69,7 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Country</th>
                     
                 </tr>
             </thead>
@@ -121,6 +124,7 @@
                 { data: "name" },
                 { data: "email" },
                 { data: "role" },
+                { data: "country" },
                 //{ data: "status" }
             ]
         });

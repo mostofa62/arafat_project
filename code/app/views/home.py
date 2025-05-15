@@ -31,3 +31,8 @@ def category_course(category_id):
 @redirect_if_logged_in
 def login():
     return render_template('login-all.html')
+
+
+@home_bp.route('/contact')
+def contact():
+    return ""

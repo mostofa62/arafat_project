@@ -1,10 +1,19 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, login_required, current_user, logout_user
-from sqlalchemy import func
-from app.models import Course, Enrollment, Order, User, db
+from sqlalchemy import func, desc
+from app.models import Course, Enrollment, Order, User, db, Category
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.middleware import redirect_if_logged_in
+import os
+import json
 
+file_path = os.path.join(os.path.dirname(__file__), 'countries.json')
+countries = []
+with open(file_path) as f:
+    countries_data = json.load(f)
+    countries = countries_data["countries"]["country"]
+
+country_lookup = {c["countryCode"]: c["countryName"] for c in countries}
 
 teacher_bp = Blueprint('teacher', __name__)
 
@@ -61,16 +70,57 @@ def dashboard():
         Enrollment.course_id.in_(teacher_courses)
     ).scalar() or 0
 
+    country_counts = db.session.query(
+        User.country,
+        func.count(Enrollment.id).label('enrollment_count')
+    ).join(
+        Enrollment, Enrollment.student_id == User.id
+    ).filter(
+        Enrollment.course_id.in_(teacher_courses)
+    ).group_by(
+        User.country
+    ).all()
+    
+
+    # Query for best-selling category
+    best_selling_category = db.session.query(
+        Category.name,
+        func.count(Enrollment.id).label('enrollment_count')
+    ).join(
+        Course, Course.category_id == Category.id
+    ).join(
+        Enrollment, Enrollment.course_id == Course.id
+    ).filter(
+        Course.id.in_(teacher_courses)
+    ).group_by(
+        Category.id
+    ).order_by(
+        desc('enrollment_count')
+    ).first()
+
+
+    # Build dict with separate arrays
+    chart_data = {
+        'data': [country_lookup.get(country.strip().upper(), country) for country, _ in country_counts],
+        'count': [count for _, count in country_counts]
+    }
+
+
     # Total revenue from completed orders for this teacher's courses
     total_revenue = db.session.query(func.coalesce(func.sum(Order.amount), 0)).filter(
         Order.course_id.in_(teacher_courses),
         Order.payment_status == 'completed'
     ).scalar() or 0
+
+
+
+
     data = {
         'total_student':enrollment_count,
-        'total_revenue':total_revenue
+        'total_revenue':total_revenue,
+        'best_selling_category':best_selling_category
     }
-    return render_template('teacher/dashboard.html', title='My dashboard',data=data)
+    return render_template('teacher/dashboard.html', title='My dashboard',data=data, chart_data=chart_data)
 
 @teacher_bp.route('/logout')
 @login_required

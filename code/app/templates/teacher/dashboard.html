@@ -11,7 +11,11 @@
             <ul class="space-y-4">
                 
                 <li><a href="{{ url_for('teacher_courses.index') }}" class="text-white hover:text-gray-400">Courses</a></li>
-                
+                <li>
+                <a href="{{ url_for('course_students.index') }}" class="text-white hover:text-gray-400">
+                    Course Enrollments
+                </a>
+                </li>
             </ul>
         </div>
 
@@ -22,6 +26,7 @@
                 <a href="{{ url_for('teacher_courses.create') }}" class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600">
                     Create Course
                 </a>
+                
             </div>
 
             <!-- Information Blocks -->
@@ -37,6 +42,35 @@
                     <h3 class="text-xl font-semibold mb-4">Recent Student Ratings</h3>
                     <p class="text-lg">4.7 / 5</p>
                 </div>
+
+                <!-- Best-Selling Category -->
+                <div class="bg-white p-6 rounded-lg shadow-md col-span-2">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center space-x-2">
+                        <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.173 3.614a1 1 0 00.95.69h3.801c.969 0 1.371 1.24.588 1.81l-3.074 2.23a1 1 0 00-.364 1.118l1.173 3.614c.3.921-.755 1.688-1.54 1.118l-3.074-2.23a1 1 0 00-1.176 0l-3.074 2.23c-.785.57-1.84-.197-1.54-1.118l1.173-3.614a1 1 0 00-.364-1.118l-3.074-2.23c-.783-.57-.38-1.81.588-1.81h3.801a1 1 0 00.95-.69l1.173-3.614z"/>
+                        </svg>
+                        <span>Best-Selling Category</span>
+                    </h3>
+                    {% if data.best_selling_category %}
+                        <div class="flex rounded-lg overflow-hidden shadow-md text-white text-xl font-semibold">
+                            <!-- Left: Category Name -->
+                            <div class="bg-indigo-600 w-1/2 px-6 py-5">
+                                {{ data.best_selling_category[0] }}
+                            </div>
+                            <!-- Right: Enrollment Count -->
+                            <div class="bg-green-600 w-1/2 px-6 py-5 text-right">
+                                {{ data.best_selling_category[1] }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="bg-gray-200 text-gray-600 rounded-lg px-6 py-4 text-center text-lg font-medium">
+                            No enrollments yet to determine a best-selling category.
+                        </div>
+                    {% endif %}
+
+
+                </div>
+
             </div>
 
             <div class="grid grid-cols-2 gap-6">
@@ -57,7 +91,7 @@
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
 
 
 
@@ -73,7 +107,8 @@
     }
     const options = {
         series: [{
-            data: [45, 32, 23]
+            //data: [45, 32, 23]
+            data: {{ chart_data['count'] | tojson }},
         }],
         chart: {
             type: 'bar',
@@ -97,7 +132,8 @@
             formatter: (val) => `${val}` // Just the value
         },
         xaxis: {
-            categories: ['Australia', 'India', 'Bangladesh'],
+            //categories: ['Australia', 'India', 'Bangladesh'],
+            categories: {{ chart_data['data'] | tojson }},
             axisBorder: {
                 show: false // Hides the x-axis border
             },
