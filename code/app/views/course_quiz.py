@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app import db
-from app.models import Course, Quiz
+from app.models import Course, Quiz, QuizAttempt
 from app.forms import QuizForm  # You'll need to create this form
 from datetime import datetime
 
@@ -28,35 +28,48 @@ def quizzes_data(course_id):
         return jsonify({"error": "Unauthorized access"}), 403
 
     quizzes = Quiz.query.filter_by(course_id=course_id).order_by(Quiz.created_at.desc()).all()
-    data = [
-        {
-            'id': quiz.id,
-            'title': quiz.title,
-            'description': quiz.description or '',
-            'created_at': quiz.created_at.strftime('%Y-%m-%d %H:%M'),
-            'actions': f"""
-                <a href="/quiz/{quiz.id}/questions" 
-                               class="inline-block bg-green-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
-                                Manage Questions
-                            </a>
 
-                            <a href="/quiz/{quiz.id}/attempts" 
-                               class="inline-block bg-blue-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
-                                Manage Submission
-                            </a>
-                <a href="{url_for('course_quiz.edit_quiz', course_id=course_id, quiz_id=quiz.id)}" 
-                   class="bg-yellow-400 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-yellow-500 text-sm">
-                    Edit
-                </a>
+    data = []
+    for quiz in quizzes:
+        # Check if quiz has any attempts
+        has_attempts = QuizAttempt.query.filter_by(quiz_id=quiz.id).first() is not None
+
+        actions_html = f"""
+            <a href="/quiz/{quiz.id}/questions" 
+               class="inline-block bg-green-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
+                Manage Questions
+            </a>
+
+            <a href="/quiz/{quiz.id}/attempts" 
+               class="inline-block bg-blue-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
+                Manage Submission
+            </a>
+
+            <a href="{url_for('course_quiz.edit_quiz', course_id=course_id, quiz_id=quiz.id)}" 
+               class="bg-yellow-400 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-yellow-500 text-sm">
+                Edit
+            </a>
+        """
+
+        if not has_attempts:
+            # Only show delete button if no attempts exist
+            actions_html += f"""
                 <button data-url="{url_for('course_quiz.delete_quiz', course_id=course_id, quiz_id=quiz.id)}" 
                         class="delete-quiz bg-red-500 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-red-600 text-sm">
                     Delete
                 </button>
             """
-        }
-        for quiz in quizzes
-    ]
+
+        data.append({
+            'id': quiz.id,
+            'title': quiz.title,
+            'description': quiz.description or '',
+            'created_at': quiz.created_at.strftime('%Y-%m-%d %H:%M'),
+            'actions': actions_html
+        })
+
     return jsonify({"data": data})
+
 
 
 @course_quiz.route('/courses/<int:course_id>/quizzes/create', methods=['GET', 'POST'])

@@ -14,6 +14,7 @@
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Content Type</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Order</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700"></th>
                 </tr>
             </thead>
@@ -22,18 +23,26 @@
 </div>
 
 <script>
-    $(document).ready(function() {
-        $('#lessons-table').DataTable({
-            ajax: "{{ url_for('enrolled_lesson.lessons_data', course_id=course.id) }}",
-            columns: [
-                { data: 'title' },
-                { data: 'content_type' },
-                { data: 'order' },
-                { data: 'actions', orderable: false, searchable: false }                
-            ]
-        });
-        
+    $('#lessons-table').DataTable({
+        ajax: "{{ url_for('enrolled_lesson.lessons_data', course_id=course.id) }}",
+        columns: [
+            { data: 'title' },
+            { data: 'content_type' },
+            { data: 'order' },
+            {
+                data: 'completed',
+                render: function(data, type, row) {
+                    return data
+                        ? '<span class="text-green-600 font-semibold">Completed</span>'
+                        : '<span class="text-gray-400 italic">Incomplete</span>';
+                },
+                orderable: false,
+                searchable: false
+            },
+            { data: 'actions', orderable: false, searchable: false }
+        ]
     });
+
 </script>
 
 

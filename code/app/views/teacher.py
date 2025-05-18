@@ -112,15 +112,36 @@ def dashboard():
         Order.payment_status == 'completed'
     ).scalar() or 0
 
+    # Total enrollments in teacher's courses (to calculate percentage)
+    total_teacher_enrollments = db.session.query(func.count(Enrollment.id)) \
+    .filter(Enrollment.course_id.in_(teacher_courses)) \
+    .scalar()
 
 
+    # Query enrollment distribution for teacher's courses
+    course_enrollments = (
+        db.session.query(
+            Course.title.label("course_title"),
+            func.count(Enrollment.id).label("student_count"),
+            (func.count(Enrollment.id) * 100.0 / total_teacher_enrollments).label("percentage")
+        )
+        .join(Enrollment, Enrollment.course_id == Course.id)
+        .filter(Course.id.in_(teacher_courses))
+        .group_by(Course.id)
+        .all()
+    )
 
     data = {
         'total_student':enrollment_count,
         'total_revenue':total_revenue,
         'best_selling_category':best_selling_category
     }
-    return render_template('teacher/dashboard.html', title='My dashboard',data=data, chart_data=chart_data)
+    return render_template('teacher/dashboard.html', 
+    title='My dashboard',
+    data=data, 
+    chart_data=chart_data,
+    course_enrollments=course_enrollments
+    )
 
 @teacher_bp.route('/logout')
 @login_required

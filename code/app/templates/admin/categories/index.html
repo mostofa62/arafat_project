@@ -53,6 +53,7 @@
                class="inline-block bg-yellow-400 text-white px-3 py-1 rounded-md shadow-sm hover:bg-yellow-500 text-sm">
                 Edit
             </a>
+            {% if category.courses.count() == 0 %}
             <form action="{{ url_for('admin_categories.delete', id=category.id) }}" method="POST" class="inline-block">
                 <button type="submit" 
                         class="inline-block bg-red-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-red-600 text-sm"
@@ -60,6 +61,7 @@
                     Delete
                 </button>
             </form>
+            {% endif %}
         </td>
     </tr>
     {% endfor %}

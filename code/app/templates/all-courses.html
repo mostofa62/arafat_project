@@ -1,0 +1,42 @@
+{% extends "main_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6 text-center">All Courses</h1>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for course in courses.items %}
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                {% if course.thumbnail %}
+                <img src="{{ url_for('static', filename='uploads/course_thumb/' +course.thumbnail ) }}" alt="{{ course.title }}" class="w-full h-48 object-cover">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default_thumb.png' ) }}" alt="{{ course.title }}" class="w-full h-48 object-cover">
+                {% endif %}
+                <div class="p-4">
+                    <h2 class="text-lg font-semibold">{{ course.title }}</h2>
+                    <p class="text-sm text-gray-600">{{ course.description[:100] }}...</p>
+                    <p class="text-indigo-600 mt-2 font-bold">${{ course.price }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex justify-center space-x-2">
+        {% if courses.has_prev %}
+            <a href="{{ url_for('home_bp.all_courses', page=courses.prev_num) }}" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
+        {% endif %}
+
+        {% for page_num in range(1, courses.pages + 1) %}
+            <a href="{{ url_for('home_bp.all_courses', page=page_num) }}"
+               class="px-4 py-2 rounded {{ 'bg-indigo-500 text-white' if page_num == courses.page else 'bg-gray-100 hover:bg-gray-200' }}">
+               {{ page_num }}
+            </a>
+        {% endfor %}
+
+        {% if courses.has_next %}
+            <a href="{{ url_for('home_bp.all_courses', page=courses.next_num) }}" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

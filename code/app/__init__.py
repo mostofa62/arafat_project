@@ -5,11 +5,13 @@ from app.middleware import no_cache_middleware, CustomLoginManager, redirect_if_
 from werkzeug.exceptions import RequestEntityTooLarge
 from flask_babel import Babel, format_number
 
-
+from flask_mail import Mail
 
 db = SQLAlchemy()
 #login_manager = LoginManager()
 login_manager = CustomLoginManager()
+
+mail = Mail()
 
 def create_app():
     app = Flask(__name__)
@@ -26,6 +28,8 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'admin.login'
+
+    mail.init_app(app)
 
     # Import models after initializing extensions
     with app.app_context():
@@ -49,6 +53,7 @@ def create_app():
     from app.views.course_student import course_students
 
     from app.views.checkout import checkout_bp
+    from app.views.admin_courses import admin_courses_bp
 
     app.register_blueprint(home_bp, url_prefix='/')
     app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -63,6 +68,7 @@ def create_app():
     app.register_blueprint(quiz_question)
     app.register_blueprint(enrolled_quiz)
     app.register_blueprint(course_students)
+    app.register_blueprint(admin_courses_bp)
 
     app.register_blueprint(checkout_bp, url_prefix='/checkout')
     

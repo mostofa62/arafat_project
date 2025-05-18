@@ -3,7 +3,7 @@ import uuid
 from flask import Blueprint, current_app, render_template, request, jsonify, url_for, redirect, flash
 from flask_login import login_required, current_user
 from app import db
-from app.models import Course, Lesson, User
+from app.models import Course, Lesson, User, CourseProgress
 from app.forms import LessonForm
 from datetime import timedelta
 
@@ -43,26 +43,37 @@ def lessons_data(course_id):
         return jsonify({"error": "Unauthorized access"}), 403
 
     lessons = Lesson.query.filter_by(course_id=course_id).order_by(Lesson.order).all()
-    data = [
-        {
-            'id': lesson.id,
-            'title': lesson.title,
-            'content_type': lesson.content_type,
-            'order': lesson.order,
-            'actions': f"""
-                <a href="{url_for('course_lesson.edit', course_id=course_id, lesson_id=lesson.id)}" 
-                   class="bg-yellow-400 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-yellow-500 text-sm">
-                    Edit
-                </a>
+
+    data = []
+    for lesson in lessons:
+        # Check if this lesson has any progress entries
+        has_progress = CourseProgress.query.filter_by(lesson_id=lesson.id).first() is not None
+
+        actions_html = f"""
+            <a href="{url_for('course_lesson.edit', course_id=course_id, lesson_id=lesson.id)}" 
+               class="bg-yellow-400 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-yellow-500 text-sm">
+                Edit
+            </a>
+        """
+        if not has_progress:
+            # Only show Delete if no progress exists for the lesson
+            actions_html += f"""
                 <button data-url="{url_for('course_lesson.delete', course_id=course_id, lesson_id=lesson.id)}" 
                         class="delete-lesson bg-red-500 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-red-600 text-sm">
                     Delete
                 </button>
             """
-        }
-        for lesson in lessons
-    ]
+
+        data.append({
+            'id': lesson.id,
+            'title': lesson.title,
+            'content_type': lesson.content_type,
+            'order': lesson.order,
+            'actions': actions_html
+        })
+
     return jsonify({"data": data})
+
 
 # Create Lesson
 @course_lesson.route('/courses/<int:course_id>/lessons/create', methods=['GET', 'POST'])

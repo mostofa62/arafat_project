@@ -13,10 +13,7 @@
         </div>
         {% endfor %}
     </div>
-    {% endif %}
-    <a href="{{ url_for('teacher_courses.create') }}" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 mb-6">
-        Create New Course
-    </a>
+    {% endif %}    
     <div class="overflow-x-auto">
         <table id="courseTable" class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
             <thead class="bg-gray-100">
@@ -27,8 +24,7 @@
                     <th class="px-4 py-2 text-left">Category</th>
                     <th class="px-4 py-2 text-left">Price</th>
                     <th class="px-4 py-2 text-left">Created At</th>
-                    <th class="px-4 py-2 text-left">No of Enrollments</th>
-                    <th class="px-4 py-2 text-left">Actions</th>
+                    <th class="px-4 py-2 text-left">No of Enrollments</th>                    
                     
                 </tr>
             </thead>
@@ -40,7 +36,7 @@
         $('#courseTable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ url_for('teacher_courses.courses_data') }}",
+            ajax: "{{ url_for('admin_courses.admin_courses_data') }}",
             columns: [
                 {
                     data: 'thumbnail',
@@ -57,33 +53,7 @@
                 { data: 'price', className: 'px-4 py-2 text-sm text-gray-700' },
                 { data: 'created_at', className: 'px-4 py-2 text-sm text-gray-700' },
                 { data: 'enrollment_count', className: 'px-4 py-2 text-sm text-gray-700' },
-                {
-                    data: 'actions',
-                    orderable: false,
-                    searchable: false,
-                    className: 'px-4 py-2 text-sm text-gray-700',
-                    render: function(data, type, row) {
-                        return `
-                            <a href="/courses/${row.id}/lessons" 
-                               class="inline-block bg-blue-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
-                                Manage Lessons
-                            </a>
-
-                            <a href="/courses/${row.id}/quizzes" 
-                               class="inline-block bg-green-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-blue-600">
-                                Manage Quizzes
-                            </a>
-                            <a href="/courses/edit/${row.id}" 
-                               class="inline-block bg-yellow-400 text-white px-3 py-1 rounded-md shadow-sm hover:bg-yellow-500">
-                                Edit
-                            </a>
-                            ${row.enrollment_count < 1 ? `<button data-url="/courses/delete/${row.id}" 
-                                    class="delete-course bg-red-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-red-600">
-                                Delete
-                            </button>`:''}
-                        `;
-                    }
-                },
+                
             ],
             responsive: true,
             dom: '<"flex items-center justify-between mb-4"lf>rt<"flex items-center justify-between mt-4"ip>',

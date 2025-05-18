@@ -2,6 +2,10 @@
 {% block content %}
 <div class="container mx-auto px-4 py-6">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">Quizzes for {{ course.title }}</h1>
+    <a href="{{ url_for('student_courses.index') }}"
+       class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 mb-6 transition duration-200">
+        ← Back to Enrollments
+    </a>
     {% if get_flashed_messages() %}
     <div id="flash-messages" class="mb-4">
         {% for message in get_flashed_messages(with_categories=true) %}
@@ -35,7 +39,25 @@
             ajax: "{{ url_for('enrolled_quiz.quizzes_data', course_id=course.id) }}",
             columns: [
                 { data: 'title' },  
-                { data: 'score' },               
+                //{ data: 'score' },               
+                {
+                data: 'score',
+                className: 'px-4 py-2 text-sm text-gray-700',
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    const percent = parseInt(data.replace('%', '')) || 0;
+                    const barColor = percent === 100 ? 'bg-green-500' : percent >= 50 ? 'bg-blue-500' : 'bg-yellow-500';
+
+                    return `
+                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div class="${barColor} h-4 text-xs text-white text-center leading-4" style="width: ${percent}%;">
+                        ${percent}%
+                        </div>
+                    </div>
+                    `;
+                }
+                },
                 {
                     data: 'actions',
                     orderable: false,

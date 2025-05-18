@@ -4,8 +4,35 @@
 <div class="container mx-auto px-4 py-6">
     <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
-    <!-- Category Sales Section -->
-    <div class="mb-8">
+    <!-- Charts Section -->
+<section class="flex flex-col md:flex-row gap-6 mb-10">
+    <!-- Course Sales Chart -->
+    <div class="bg-white p-6 shadow-md rounded-lg flex-1">        
+        <div id="salesChart" class="w-full h-96"></div>
+    </div>
+
+    <!-- Enrollment Chart -->
+    <div class="bg-white p-6 shadow-md rounded-lg flex-1">        
+        <div id="enrollmentChart" class="w-full h-96"></div>
+    </div>
+</section>
+
+<!-- Total Revenue Section -->
+<div class="my-8">
+    <h2 class="text-2xl font-semibold mb-4">Total Revenue</h2>
+    <div class="bg-white p-6 shadow-md rounded-lg flex items-center justify-between">
+        <div>
+            <h3 class="text-xl font-semibold text-green-600">Total Revenue</h3>
+            <p class="text-gray-500">From Completed Orders</p>
+        </div>
+        <span class="text-3xl font-bold text-green-700">${{ '%.2f' | format(total_revenue) }}</span>
+    </div>
+</div>
+
+
+
+    <!-- Category Sales Table -->
+    <section class="mb-10">
         <h2 class="text-2xl font-semibold mb-4">Course Sales by Category</h2>
         <div class="overflow-x-auto bg-white shadow-md rounded-lg">
             <table class="min-w-full table-auto">
@@ -27,10 +54,10 @@
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <!-- User Role Counts Section -->
-    <div>
+    </section>
+    
+    <!-- User Role Counts -->
+    <section>
         <h2 class="text-2xl font-semibold mb-4">User Counts by Role</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {% for role, count in user_role_counts %}
@@ -43,6 +70,62 @@
             </div>
             {% endfor %}
         </div>
-    </div>
+    </section>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Sales Chart
+        const salesOptions = {
+            chart: { type: 'pie' },
+            series: {{ category_sales | map(attribute='percentage') | list | tojson }},
+            labels: {{ category_sales | map(attribute='category_name') | list | tojson }},
+            title: {
+                text: 'Sales Distribution by Category',
+                align: 'center',
+                offsetY: 10,  // space below title
+                style: { fontSize: '20px' }
+            },
+            legend: {
+        position: 'bottom',
+        offsetY: 10
+    },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val.toFixed(2) + "%";
+                    }
+                }
+            }
+        };
+        new ApexCharts(document.querySelector("#salesChart"), salesOptions).render();
+
+        // Enrollment Chart
+        const enrollmentOptions = {
+            chart: { type: 'donut' },
+            series: {{ course_enrollments | map(attribute='percentage') | list | tojson }},
+            labels: {{ course_enrollments | map(attribute='course_title') | list | tojson }},
+            title: {
+                text: 'Student Enrollment by Course',
+                align: 'center',
+                offsetY: 10,  // space below title
+                style: { fontSize: '20px' }
+            },
+            legend: {
+        position: 'bottom',
+        offsetY: 10
+    },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val.toFixed(2) + "%"
+                    }
+                }
+            }
+        };
+        new ApexCharts(document.querySelector("#enrollmentChart"), enrollmentOptions).render();
+    });
+</script>
+
 {% endblock %}

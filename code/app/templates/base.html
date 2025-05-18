@@ -20,7 +20,10 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-blue-500 flex items-center gap-2 p-4 text-white">
-        <a href="/" class="{{ 'font-bold underline' if request.path == '/' else '' }}">Home</a>
+        <a href="/" class="flex items-center space-x-2">
+        <img src="{{ url_for('static', filename='images/logo-white.png') }}" alt="{{ default_title }}" class="h-6 w-auto">
+        <span class="font-bold text-white capitalize">{{ default_title }}</span>
+    </a>
     
         {% if current_user.is_authenticated %}
             <a href="{{ url_for(current_user.role + '.dashboard') }}"
@@ -48,6 +51,10 @@
                 <a href="{{ url_for('admin_categories.index') }}"
                    class="{{ 'font-bold underline' if request.path == url_for('admin_categories.index') else '' }}">
                    Categories
+                </a>
+                <a href="{{ url_for('admin_courses.index') }}"
+                   class="{{ 'font-bold underline' if request.path == url_for('admin_courses.index') else '' }}">
+                   Courses
                 </a>
             {% endif %}
     

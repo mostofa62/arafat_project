@@ -7,6 +7,7 @@ from app import db
 from app.models import Course, Enrollment, Lesson, User,CourseProgress
 from app.forms import LessonForm
 from datetime import timedelta
+from sqlalchemy.orm import joinedload
 
 def parse_duration(duration_str: str):
     """
@@ -38,28 +39,32 @@ def list_lessons(course_id):
     course = enrollment.course  # You can access the course from the relationship
     return render_template('student/lessons/index.html', course=course, title=f'Lessons for {course.title}')
 
-# API for fetching lessons data
 @enrolled_lesson.route('/enrollments/<int:course_id>/lessons/data', methods=['GET'])
 @login_required
 def lessons_data(course_id):
     enrollment = Enrollment.query.filter_by(course_id=course_id, student_id=current_user.id).first()
     if not enrollment:
         return jsonify({"error": "No Enrollments lessons"}), 403
-           
 
+    # Query lessons and progress in one go
     lessons = Lesson.query.filter_by(course_id=course_id).order_by(asc(Lesson.order)).all()
+    completed_lesson_ids = {
+        cp.lesson_id for cp in CourseProgress.query.filter_by(course_id=course_id, student_id=current_user.id).all()
+    }
+
     data = [
         {
             'id': lesson.id,
             'title': lesson.title,
             'content_type': lesson.content_type,
             'order': lesson.order,
+            'completed': lesson.id in completed_lesson_ids,
             'actions': f"""
                 <a href="{url_for('enrolled_lesson.show', course_id=course_id, lesson_id=lesson.id)}" 
                    class="bg-yellow-400 text-white px-3 py-1 rounded-sm shadow-sm hover:bg-yellow-500 text-sm">
                   Show  
-                </a>                
-            """            
+                </a>
+            """
         }
         for lesson in lessons
     ]

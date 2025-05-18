@@ -73,7 +73,7 @@
             </div>
         {% endif %}
     </div>
-
+    {% if not completed %}
     <!-- Mark as Complete Button -->
     <form method="POST" action="{{ url_for('enrolled_lesson.complete_lesson', course_id=lesson.course_id, lesson_id=lesson.id) }}">
         <button type="submit"
@@ -81,5 +81,6 @@
             ✅ Mark as Complete
         </button>
     </form>
+    {% endif %}
 </div>
 {% endblock %}

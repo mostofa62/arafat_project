@@ -158,7 +158,7 @@ def delete_question(quiz_id, question_id):
 def attempt_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
 
-    # ✅ Check if the student already attempted this quiz
+    # Check if the student already attempted this quiz
     existing_attempt = QuizAttempt.query.filter_by(
         quiz_id=quiz_id,
         student_id=current_user.id
@@ -175,7 +175,7 @@ def attempt_quiz(quiz_id):
             student_id=current_user.id
         )
         db.session.add(attempt)
-        db.session.flush()  # So we get the attempt.id
+        db.session.flush()  # To get attempt.id
 
         total_questions = 0
         correct_answers = 0
@@ -183,30 +183,49 @@ def attempt_quiz(quiz_id):
         for question in quiz.questions:
             qid = str(question.id)
             selected_ids = request.form.getlist(f'question-{qid}')
+            selected_ids_set = set(map(int, selected_ids))
 
-            for selected_id in selected_ids:
-                selected_answer = Answer.query.get(int(selected_id))
-                if selected_answer and selected_answer.question_id == question.id:
-                    db.session.add(AttemptAnswer(
-                        attempt_id=attempt.id,
-                        question_id=question.id,
-                        selected_answer_id=selected_answer.id
-                    ))
+            # Get correct answers for this question
+            correct_answer_ids = {a.id for a in question.answers if a.is_correct}
 
-                    if selected_answer.is_correct:
-                        correct_answers += 1
+            # Save attempt answers
+            for selected_id in selected_ids_set:
+                db.session.add(AttemptAnswer(
+                    attempt_id=attempt.id,
+                    question_id=question.id,
+                    selected_answer_id=selected_id
+                ))
+
+            if not selected_ids_set:
+                total_questions += 1
+                continue  # Skip scoring if nothing selected
+
+            if len(correct_answer_ids) == 1:
+                # Single choice: exact match required
+                if selected_ids_set == correct_answer_ids:
+                    correct_answers += 1
+            else:
+                # Multiple choice: partial score based on correct selections only
+                num_correct_selected = len(selected_ids_set & correct_answer_ids)
+                total_correct = len(correct_answer_ids)
+
+                if total_correct > 0:
+                    partial_credit = num_correct_selected / total_correct
+                    correct_answers += partial_credit
 
             total_questions += 1
 
-        # Save score
+        # Save final score
         if total_questions:
-            attempt.score = round((correct_answers / total_questions) * 100, 2)
+            score = round((correct_answers / total_questions) * 100, 2)
+            attempt.score = min(score, 100.0)  # Cap at 100%
+
         db.session.commit()
 
         flash(f'Quiz submitted! Your score: {attempt.score}%', 'success')
         return redirect(url_for('enrolled_quiz.list_quizzes', course_id=quiz.course_id))
 
-    # GET: render quiz form
+    # GET: Render quiz form
     return render_template('student/quizzes/attempt.html', quiz=quiz)
 
 

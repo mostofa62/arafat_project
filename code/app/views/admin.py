@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_user, login_required, current_user, logout_user
-from app.models import User, db, Order, Category, Course
+from app.models import User, db, Order, Category, Course, Enrollment
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.middleware import redirect_if_logged_in
 import os
@@ -56,7 +56,38 @@ def dashboard():
         .group_by(User.role)
         .all()
     )  # Example: Admin can view all users
-    return render_template('admin/dashboard.html', category_sales=category_sales,user_role_counts=user_role_counts, title='My Dashboard')
+
+
+    # Total students enrolled
+    total_enrollments = db.session.query(func.count(Enrollment.id)).scalar()
+
+    # Course-wise enrollment distribution
+    course_enrollments = (
+        db.session.query(
+            Course.title.label("course_title"),
+            func.count(Enrollment.id).label("student_count"),
+            (func.count(Enrollment.id) * 100.0 / total_enrollments).label("percentage")
+        )
+        .join(Enrollment, Enrollment.course_id == Course.id)
+        .group_by(Course.id)
+        .all()
+    )
+
+    total_revenue = (
+    db.session.query(func.coalesce(func.sum(Order.amount), 0))
+    .filter(Order.payment_status == 'completed')  # Only count completed payments
+    .scalar()
+)
+
+    return render_template(
+        'admin/dashboard.html',
+        category_sales=category_sales,
+        user_role_counts=user_role_counts,
+        course_enrollments=course_enrollments,
+        total_revenue=total_revenue,
+        title='My Dashboard'
+    )
+
 
 @admin_bp.route('/logout')
 @login_required

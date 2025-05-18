@@ -1,7 +1,9 @@
-<!-- templates/partials/_header.html -->
 <header class="sticky top-0 z-50 bg-white shadow-md">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" class="text-xl font-bold text-gray-800 capitalize">{{ default_title }}</a>
+        <a href="/" class="flex items-center space-x-2">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="{{ default_title }}" class="h-8 w-auto">
+            <span class="text-xl font-bold text-gray-800 capitalize">{{ default_title }}</span>
+        </a>
         <nav class="space-x-6 capitalize">
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for(current_user.role + '.dashboard') }}">My Dashboard</a>
@@ -12,8 +14,9 @@
                 <a href="/teacher" class="text-gray-600 hover:text-blue-600">teacher's portal</a>
                 <a href="/student" class="text-gray-600 hover:text-blue-600">student's portal</a>
             {% endif %} 
-        <a href="/contact" class="text-gray-600 hover:text-blue-600">contact</a>
+            <a href="/contact" class="text-gray-600 hover:text-blue-600">contact</a>
         </nav>
     </div>
 </header>
+
   
