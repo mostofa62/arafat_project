@@ -1,0 +1,78 @@
+{% extends "main_layout.html" %}
+{% block content %}
+<div class="bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Your Cart</h1>
+
+    {% if get_flashed_messages() %}
+    <div id="flash-messages" class="mb-4">
+        {% for message in get_flashed_messages(with_categories=true) %}
+        <div 
+            class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+            role="alert"
+        >
+            {{ message[1] }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if cart %}
+        <ul class="divide-y">
+            {% for item in cart %}
+                <li class="py-4 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        {% if item.thumbnail %}
+                            <img src="{{ url_for('static', filename='uploads/course_thumb/' + item.thumbnail) }}" class="w-16 h-16 rounded object-cover">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default_thumb.png') }}" alt="{{ item.title }}" class="w-16 h-16 rounded object-cover">
+                        {% endif %}
+                        <div>
+                            <h2 class="text-lg font-semibold">{{ item.title }}</h2>
+                            <p class="text-green-700 font-medium">${{ '%.2f'|format(item.price) }}</p>
+                        </div>
+                    </div>
+                    <!-- 🗑 Remove from cart form -->
+                    <form action="{{ url_for('checkout_bp.remove_from_cart', course_id=item.id) }}" method="POST">
+                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-1 rounded border border-red-600 hover:bg-red-100 transition">
+                            Remove
+                        </button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="mt-4 text-right font-bold text-xl">
+            Total: ${{ '%.2f'|format(total_price) }}
+        </div>
+        <div class="mt-6 text-right">
+            <a href="{{ url_for('checkout_bp.checkout') }}" 
+            class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded">
+                Proceed to Checkout
+            </a>
+        </div>
+    {% else %}
+        <p class="text-gray-500">Your cart is empty.</p>
+    {% endif %}
+</div>
+
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
+
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+{% endblock %}
+

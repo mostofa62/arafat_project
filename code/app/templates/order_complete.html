@@ -1,0 +1,64 @@
+{% extends "main_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 text-center">
+    <h1 class="text-3xl font-bold mb-6 text-green-700">Thank you for your purchase!</h1>
+    <p class="text-lg mb-4">You are now enrolled in the following courses:</p>
+    {% if get_flashed_messages() %}
+    <div id="flash-messages" class="mb-4">
+        {% for message in get_flashed_messages(with_categories=true) %}
+        <div 
+            class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+            role="alert"
+        >
+            {{ message[1] }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <ul class="max-w-xl mx-auto text-left">
+        {% for course in courses %}
+        <li class="mb-2 flex justify-between border-b pb-2">
+            <span>{{ course.title }}</span>
+            <span class="font-semibold">${{ '%.2f'|format(course.price) }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="mt-6 font-bold text-xl">
+        Total Paid: ${{ '%.2f'|format(total_price) }}
+    </div>
+
+    <div class="mt-8">
+        <a href="{{ url_for(current_user.role + '.dashboard') }}" 
+           class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded">
+            Go to My Dashboard
+        </a>
+        <a href="{{ url_for('home_bp.all_courses') }}" 
+           class="inline-block ml-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-6 rounded">
+            Continue Browsing Courses
+        </a>
+    </div>
+</div>
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
+
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
+{% endblock %}

@@ -4,7 +4,7 @@
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="{{ default_title }}" class="h-8 w-auto">
             <span class="text-xl font-bold text-gray-800 capitalize">{{ default_title }}</span>
         </a>
-        <nav class="space-x-6 capitalize">
+        <nav class="space-x-6 capitalize relative">
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for(current_user.role + '.dashboard') }}">My Dashboard</a>
                 <a href="{{ url_for(current_user.role + '.logout') }}">Logout</a>
@@ -14,9 +14,20 @@
                 <a href="/teacher" class="text-gray-600 hover:text-blue-600">teacher's portal</a>
                 <a href="/student" class="text-gray-600 hover:text-blue-600">student's portal</a>
             {% endif %} 
+
+            <a href="{{ url_for('checkout_bp.view_cart') }}" class="relative text-gray-600 hover:text-blue-600">
+                🛒 Cart
+                {% if session.get('cart') and session['cart']|length > 0 %}
+                    <span class="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        {{ session['cart']|length }}
+                    </span>
+                {% endif %}
+            </a>
+
             <a href="/contact" class="text-gray-600 hover:text-blue-600">contact</a>
         </nav>
     </div>
 </header>
+
 
   

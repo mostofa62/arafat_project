@@ -1,34 +1,67 @@
 {% extends "main_layout.html" %}
 
 {% block content %}
-<div class="flex flex-col gap-3 items-center border border-black shadow p-5">
-{% if course.thumbnail %}
-<img src="{{ url_for('static', filename='uploads/course_thumb/' +course.thumbnail ) }}" alt="{{ course.title }} thumbnail" class="w-24 h-24 object-cover rounded">    
-{% endif %}
-<h2>Checkout: {{ course.title }}</h2>
-<p>Price: ${{ course.price }}</p>
+<div class="container mx-auto py-10">
+    <h1 class="text-2xl font-bold mb-6">Checkout</h1>
+    {% if get_flashed_messages() %}
+        <div id="flash-messages" class="mb-4">
+            {% for message in get_flashed_messages(with_categories=true) %}
+            <div 
+                class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+                role="alert"
+            >
+                {{ message[1] }}
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div id="flash-messages" class="mb-4">
-      {% for category, message in messages %}
-        {% if category == 'success' %}
-          <div class="px-4 py-3 rounded text-white bg-green-500" role="alert">
-            {{ message }}
-          </div>
-        {% endif %}
-      {% endfor %}
+    <ul class="divide-y">
+        {% for item in cart %}
+            <li class="py-4 flex items-center gap-4">
+                {% if item.thumbnail %}
+                    <img src="{{ url_for('static', filename='uploads/course_thumb/' + item.thumbnail) }}" class="w-16 h-16 rounded object-cover">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/default_thumb.png') }}" alt="{{ item.title }}" class="w-16 h-16 rounded object-cover">
+                {% endif %}
+                <div class="flex-1">
+                    <h2 class="text-lg font-semibold">{{ item.title }}</h2>
+                    <p class="text-green-700 font-medium">${{ '%.2f'|format(item.price) }}</p>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="mt-6 text-right font-bold text-xl">
+        Total: ${{ '%.2f'|format(total_price) }}
     </div>
-  {% endif %}
-{% endwith %}
 
-{%  if not existing_order %}
-<form method="POST">
-    <input type="hidden" name="course_id" value="{{ course.id }}">
-    <input type="hidden" name="amount" value="{{ course.price }}">
-    <button type="submit" class="border rounded-md border-black py-2 px-4">Confirm Purchase</button>
-</form>
-{% endif %}
+    <form method="POST" class="mt-8">
+        <!-- Add payment form fields here if needed -->
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded">
+            Confirm Order
+        </button>
+    </form>
 </div>
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
 
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
 {% endblock %}

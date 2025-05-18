@@ -8,16 +8,24 @@
         {% for course in courses.items %}
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 {% if course.thumbnail %}
-                <img src="{{ url_for('static', filename='uploads/course_thumb/' +course.thumbnail ) }}" alt="{{ course.title }}" class="w-full h-48 object-cover">
+                <img src="{{ url_for('static', filename='uploads/course_thumb/' + course.thumbnail) }}" alt="{{ course.title }}" class="w-full h-48 object-cover">
                 {% else %}
-                <img src="{{ url_for('static', filename='images/default_thumb.png' ) }}" alt="{{ course.title }}" class="w-full h-48 object-cover">
+                <img src="{{ url_for('static', filename='images/default_thumb.png') }}" alt="{{ course.title }}" class="w-full h-48 object-cover">
                 {% endif %}
                 <div class="p-4">
                     <h2 class="text-lg font-semibold">{{ course.title }}</h2>
                     <p class="text-sm text-gray-600">{{ course.description[:100] }}...</p>
                     <p class="text-indigo-600 mt-2 font-bold">${{ course.price }}</p>
+                    {% if current_user.role not in ['teacher', 'admin'] %}
+                    <form action="{{ url_for('checkout_bp.add_to_cart', course_id=course.id) }}" method="POST" class="mt-4">
+                        <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium py-2 px-4 rounded transition">
+                            Add to Cart
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
             </div>
+
         {% endfor %}
     </div>
 

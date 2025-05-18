@@ -4,15 +4,18 @@
 <div class="w-2/3 mx-auto p-6 bg-white shadow-md rounded-lg my-2">
     <h2 class="text-2xl font-bold mb-4 text-gray-800">Contact Us</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="mb-4 p-3 rounded text-white {{ 'bg-green-500' if category == 'success' else 'bg-red-500' }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    {% if get_flashed_messages() %}
+        <div id="flash-messages" class="mb-4">
+            {% for message in get_flashed_messages(with_categories=true) %}
+            <div 
+                class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+                role="alert"
+            >
+                {{ message[1] }}
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <form method="POST" class="space-y-4">
         <div>

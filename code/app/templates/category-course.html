@@ -3,6 +3,18 @@
 {% block content %}
     <div class="bg-white p-6 rounded shadow">
         <h1 class="text-2xl font-bold mb-6">Courses in {{ category.name }}</h1>
+        {% if get_flashed_messages() %}
+        <div id="flash-messages" class="mb-4">
+            {% for message in get_flashed_messages(with_categories=true) %}
+            <div 
+                class="flash-message px-4 py-3 rounded text-white {{ 'bg-red-500' if message[0] == 'error' else 'bg-green-500' }}" 
+                role="alert"
+            >
+                {{ message[1] }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% if courses %}
             <ul class="space-y-6">
                 {% for course in courses %}
@@ -19,9 +31,15 @@
                             <p class="text-base font-semibold text-green-700 mb-3">
                                 {{ course.price | float | round(2) | string | format_currency('USD', locale='en_US') }}
                             </p>
-                            <a href="/checkout/{{ course.id }}" class="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition">
-                                Purchase
-                            </a>
+                            {% if current_user.role not in ['teacher', 'admin'] %}
+                                <!-- show Add to Cart button -->
+                                <form action="{{ url_for('checkout_bp.add_to_cart', course_id=course.id) }}" method="POST">
+                                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium py-2 px-4 rounded transition">
+                                        Add to Cart
+                                    </button>
+                                </form>
+                            {% endif %}
+                     
                         </div>
                     </li>
                 {% endfor %}
@@ -30,6 +48,26 @@
             <p class="text-gray-500">No courses found in this category.</p>
         {% endif %}
     </div>
+<script>
+// Automatically fade out flash messages after 2 seconds
+setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach((message) => {
+        message.style.transition = 'opacity 2s';
+        message.style.opacity = '0';
+        setTimeout(() => {
+            message.remove();
+        }, 2000); // Remove the element from the DOM after fading out
+    });
+}, 2000);
+</script>
 
+<style>
+/* Add custom styles for smooth transitions */
+.flash-message {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+</style>
 
 {% endblock %}
