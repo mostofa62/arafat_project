@@ -14,6 +14,55 @@
 }
 </style>
 
+<div class="container mx-auto p-4">
+  <div class="flex space-x-2">
+    <button
+      id="searchBtn"
+      class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center space-x-2"
+    >
+      <!-- Search Icon -->
+      <svg id="searchIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"></path>
+      </svg>
+      <span id="searchBtnText">Search</span>
+
+      <!-- Loading Spinner -->
+      <svg id="loadingSpinner" class="w-5 h-5 animate-spin hidden" xmlns="http://www.w3.org/2000/svg"
+          fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+    </button>
+
+
+    <input
+      type="text"
+      id="searchInput"
+      class="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      placeholder="Ask your question to AI"
+    />
+    <button
+      type="button"
+      id="clearSearch"
+      class="relative top-5 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"
+    >
+      <!-- X icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="errorMsg" class="text-red-600 mt-4 hidden"></div>
+  <div id="results" class="mt-6 space-y-4"></div>
+</div>
+
+
 
     <div class="swiper mySwiper mb-8">
   <div class="swiper-wrapper">
@@ -83,6 +132,148 @@
   },
 });
 
+$(document).ready(function () {
+    // Show/hide clear icon based on input
+    $('#searchInput').on('input', function () {
+      $('#clearSearch').toggle($(this).val().length > 0);
+    });
+
+    // Clear input on clear icon click
+    $('#clearSearch').on('click', function () {
+      $('#searchInput').val('');
+      $(this).hide();
+      $('#searchInput').focus();
+      $('#results').empty();
+    });
+  });
+
+$('#searchBtn').on('click', function () {
+    const question = $('#searchInput').val();
+    $('#errorMsg').addClass('hidden').text('');
+    $('#results').empty();
+
+    // Update button state to "Searching..."
+    $('#searchBtnText').text('Searching...');
+    $('#loadingSpinner').removeClass('hidden');
+    $('#searchIcon').addClass('hidden');
+
+    if (!question.trim()) {
+      $('#errorMsg').removeClass('hidden').text('Please ask something..');
+
+      // Revert button state
+      $('#searchBtnText').text('Search');
+      $('#loadingSpinner').addClass('hidden');
+      $('#searchIcon').removeClass('hidden');
+      return;
+    }
+    $.ajax({
+      type: 'POST',
+      url: "{{ url_for('home_bp.ask_question') }}",  // Your API endpoint
+      contentType: 'application/json',
+      data: JSON.stringify({ question: question }),
+      success: function (response) {
+        // Revert button state
+        $('#searchBtnText').text('Search');
+        $('#loadingSpinner').addClass('hidden');
+        $('#searchIcon').removeClass('hidden');
+
+        if (response.error) {
+          $('#errorMsg').removeClass('hidden').text(response.error);
+        } else if (response.results && response.results.length > 0) {
+          
+              response.results.forEach(item => {
+                let html = '';
+
+                if ('thumbnail' in item && 'title' in item && 'id' in item) {
+                  // Course-related result
+                  html = `
+                    <div class="p-4 border rounded-md shadow-sm bg-gray-50">
+                      <p class="text-lg"><strong>Course:</strong> ${item.title}</p>
+                      ${'category_name' in item?`<p><strong>Category:</strong> ${item.category_name || 'N/A'}</p>`:''}
+                      ${'teacher_name' in item ? `<p><strong>Teacher:</strong> ${item.teacher_name}</p>`:''}
+                      ${'price' in item ?`<p><strong>Price:</strong> $${item.price || '0.00'}</p>`:''}
+                      ${'total_sales' in item ? `<p class="text-md"><strong>Total Sales:</strong> $${item.total_sales || '0.00'}</p>`:''}
+                      ${'total_orders' in item ? `<p class="text-md"><strong>Total Orders:</strong> ${item.total_orders || '0'}</p>`:''}
+                      ${item.thumbnail!=null ?  `<img src="${item.thumbnail}" alt="Course Thumbnail" class="w-32 h-20 rounded object-cover mb-2">`:''}
+                    </div>
+                  `;
+                } else if ('student_name' in  item) {
+                  // Student enrollment-related result
+                  html = `
+                    <div class="p-4 border rounded-md shadow-sm bg-gray-50">
+                      <p class="text-lg"><strong>Student:</strong> ${item.student_name}</p>
+                      ${'student_country' in item ? `<p><strong>Country:</strong> ${item.student_country.trim()}</p>`:''}
+                      ${'course_title' in item ?`<p class="text-md"><strong>Course:</strong> ${item.course_title}</p>`:'' }
+                      ${'total_courses_purchased' in item ?`<p class="text-lg"><strong>Total Purchased Courses:</strong> ${item.total_courses_purchased}</p>`:''}
+                      ${'total_spent' in item ?`<p class="text-lg"><strong>Total Spent:</strong> $${item.total_spent || '0.00'}</p>`:''}
+                    </div>
+                  `;
+                } 
+                else if ('category_name' in  item) {
+                    html = `
+                    <div class="p-4 border rounded-md shadow-sm bg-gray-50">                      
+                      <p class="text-lg"><strong>Category:</strong> ${item.category_name || 'N/A'}</p>                      
+                      ${'total_sales' in item ? `<p class="text-md"><strong>Total Sales:</strong> $${item.total_sales || '0.00'}</p>`:''}
+                      ${'total_orders' in item ? `<p class="text-md"><strong>Total Orders:</strong> ${item.total_orders || '0'}</p>`:''}                      
+                    </div>
+                  `;
+                }
+                else if ('name' in  item && 'id' in item) {
+                    html = `
+                    <div class="p-4 border rounded-md shadow-sm bg-gray-50">                      
+                      <p class="text-lg"><strong>${item.name || 'N/A'}</strong></p>                                           
+                    </div>
+                  `;
+                }
+                else if (
+                  Object.keys(item).some(key => /(?:^|_)count$|^count$|^total_/.test(key))
+                ) {
+                  const countKey = Object.keys(item).find(key =>
+                    /(?:^|_)count$|^count$|^total_/.test(key)
+                  );
+
+                  const count = item[countKey];
+
+                  const label = countKey
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, c => c.toUpperCase()); // Optional label formatting
+
+                  html = `
+                    <div class="p-4 border rounded-md shadow-sm bg-gray-50">                      
+                      <p class="text-lg"><strong>${label}:</strong> ${count ?? 'N/A'}</p>                                           
+                    </div>
+                  `;
+                }
+
+                
+                else {
+                  // Generic fallback
+                  html = `
+                    <div class="p-4 border rounded-md shadow-sm bg-gray-50">
+                      <pre>${JSON.stringify(item, null, 2)}</pre>
+                    </div>
+                  `;
+                }
+
+                $('#results').append(html);
+              });
+
+
+   
+        } else {
+          $('#results').html('<p class="text-gray-600">No results found.</p>');
+        }
+      },
+      error: function (xhr) {
+        $('#searchBtnText').text('Search');
+        $('#loadingSpinner').addClass('hidden');
+        $('#searchIcon').removeClass('hidden');
+        $('#errorMsg').removeClass('hidden').text(
+          xhr.responseJSON?.error || 'Something went wrong. Please try again.'
+        );
+      }
+    });
+  });
 
 </script>
 

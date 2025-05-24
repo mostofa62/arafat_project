@@ -12,3 +12,6 @@ Flask-Bootstrap
 Flask-Babel
 reportlab
 Flask-Mail
+langchain-openai
+openai
+
