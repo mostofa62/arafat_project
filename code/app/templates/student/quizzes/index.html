@@ -46,7 +46,8 @@
                 orderable: false,
                 searchable: false,
                 render: function(data) {
-                    const percent = parseInt(data.replace('%', '')) || 0;
+                    //console.log(data)
+                    const percent = data ?  parseInt(data.replace('%', '')) : 0;
                     const barColor = percent === 100 ? 'bg-green-500' : percent >= 50 ? 'bg-blue-500' : 'bg-yellow-500';
 
                     return `
