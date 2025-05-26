@@ -20,3 +20,8 @@
 ### ``` flask --app run.py run -p 80 -h your_ip_or_domain ```
 ### rename `.env.txt` to `.env` , its enviroment variable required by project
 ### in app/static/uploads  directory all files are uploaded
+
+## OPEN AI Part
+------------------
+### `openrouter.ai` go here and get an api key
+### put that key in `.env`, variable name is `OPENAI_API_KEY`
