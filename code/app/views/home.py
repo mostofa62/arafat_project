@@ -148,10 +148,10 @@ prompt_template = ChatPromptTemplate.from_template(
     "- the teacher's name (via JOIN with users table where users.role='teacher'),\n"
     "- the category name (via JOIN with categories table)\n\n"
 
-    "👉 If the question involves **enrollment or student counts**, also include:\n"
+    "👉 If the question involves **enrollment or student counts**,(e.g. 'how many students are enrolled in course X'), they query must include:\n"
     "- COUNT(enrollments.id) AS enrolled_count\n"
-    "- Group the query by courses.id and JOIN with users and categories accordingly\n"
-    "- Always JOIN users ON users.id = courses.teacher_id AND users.role = 'teacher'\n\n"
+    "- Group the query by enrollments.id and JOIN with users and categories accordingly\n"
+    "- Always JOIN users ON users.id = enrollments.student_id AND users.role = 'student'\n\n"
 
     "👉 If the question involves **orders or sales**, include:\n"
     "- orders.id, orders.amount, orders.payment_status, orders.created_at,\n"
