@@ -1,5 +1,6 @@
 ﻿# Tutorial Portal
-
+## This a Project similiar Udemy Online Education Platform 
+### it has teacher, student, admin, course, lesson, quiz and used ai for search in home page to gether information from this portal about course, teacher, students
 ## Database Part
 -------------------
 # Create database `tutorial_portal`
